@@ -75,6 +75,7 @@ class ReportPublicTransformer
         return [
             'name' => 'Zaufanie',
             'description' => 'Jak klienci postrzegają profil — czy wygląda wiarygodnie i profesjonalnie.',
+            'score' => round($avgScore, 1),
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getZaufanieInsight($avgScore),
@@ -96,6 +97,7 @@ class ReportPublicTransformer
         return [
             'name' => 'Dopasowanie',
             'description' => 'Czy opis i oferta jasno pokazują, czym się zajmujesz i co klient zyskuje.',
+            'score' => round($score, 1),
             'status' => self::getStatus($score),
             'color' => self::getColor($score),
             'insight' => self::getDopasowanieInsight($score),
@@ -123,6 +125,7 @@ class ReportPublicTransformer
         return [
             'name' => 'Aktywność',
             'description' => 'Czy profil wygląda na aktualny i pokazuje, że firma faktycznie działa.',
+            'score' => round($avgScore, 1),
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getAktywnoscInsight($avgScore),
@@ -150,6 +153,7 @@ class ReportPublicTransformer
         return [
             'name' => 'Prezentacja',
             'description' => 'Jak Twój profil wygląda wizualnie i czy zachęca do kontaktu.',
+            'score' => round($avgScore, 1),
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getPrezentacjaInsight($avgScore),
@@ -177,6 +181,7 @@ class ReportPublicTransformer
         return [
             'name' => 'Spójność',
             'description' => 'Czy dane są kompletne, aktualne i spójne między wszystkimi elementami.',
+            'score' => round($avgScore, 1),
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getSpojnoscInsight($avgScore),
@@ -189,9 +194,9 @@ class ReportPublicTransformer
     private static function getStatus(float $score): string
     {
         if ($score < 3.0) {
-            return 'Słabo';
+            return 'Wymaga natychmiastowej interwencji';
         } elseif ($score < 4.0) {
-            return 'Wymaga poprawy';
+            return 'Wymaga pilnej poprawy';
         } else {
             return 'Dobra kondycja';
         }
@@ -286,23 +291,23 @@ class ReportPublicTransformer
      */
     private static function determineBadge(array $pillars): string
     {
-        $slabCount = 0;
-        $wymagaCount = 0;
+        $krytycznyCount = 0;
+        $pilnyCount = 0;
         $dobraCount = 0;
         
         foreach ($pillars as $pillar) {
-            if ($pillar['status'] === 'Słabo') {
-                $slabCount++;
-            } elseif ($pillar['status'] === 'Wymaga poprawy') {
-                $wymagaCount++;
+            if ($pillar['status'] === 'Wymaga natychmiastowej interwencji') {
+                $krytycznyCount++;
+            } elseif ($pillar['status'] === 'Wymaga pilnej poprawy') {
+                $pilnyCount++;
             } else {
                 $dobraCount++;
             }
         }
         
-        if ($slabCount >= 2) {
+        if ($krytycznyCount >= 2) {
             return 'Priorytet stabilizacji';
-        } elseif ($wymagaCount >= 3 && $slabCount === 0) {
+        } elseif ($pilnyCount >= 3 && $krytycznyCount === 0) {
             return 'Profil do wzmocnienia w kluczowych obszarach';
         } elseif ($dobraCount >= 3) {
             return 'Profil stabilny — potencjał do skalowania';

@@ -193,7 +193,7 @@
                             <h5 class="mb-1">
                                 {{ $pillar['name'] }}
                                 <span class="badge ms-2" style="background-color: {{ $pillar['color'] }}; color: white; font-weight: 600; font-size: 0.85rem;">
-                                    {{ $pillar['status'] }}
+                                    {{ number_format($pillar['score'], 1) }} {{ $pillar['status'] }}
                                 </span>
                             </h5>
                             <p class="text-muted mb-2" style="font-size: 0.875rem; font-style: italic;">
