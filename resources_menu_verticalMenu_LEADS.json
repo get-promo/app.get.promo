@@ -1,0 +1,34 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Dashboards",
+      "icon": "menu-icon tf-icons bx bx-home-circle",
+      "slug": "dashboard"
+    },
+    {
+      "url": "/leads",
+      "name": "Leady",
+      "icon": "menu-icon tf-icons bx bx-user",
+      "slug": "leads"
+    },
+    {
+      "url": "/page-2",
+      "name": "Page 2",
+      "icon": "menu-icon tf-icons bx bx-file",
+      "slug": "page-2"
+    }
+  ]
+}
+
+<!--
+INSTRUKCJA: Dodaj tę pozycję do resources/menu/verticalMenu.json:
+
+    {
+      "url": "/leads",
+      "name": "Leady",
+      "icon": "menu-icon tf-icons bx bx-user",
+      "slug": "leads"
+    }
+-->
+

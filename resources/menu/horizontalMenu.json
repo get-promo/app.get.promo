@@ -1,0 +1,16 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Home",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "pages-home"
+    },
+    {
+      "url": "leads",
+      "name": "Leady",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "leads"
+    }
+  ]
+}
