@@ -78,6 +78,16 @@
             border-radius: 20px;
             font-weight: 600;
         }
+        .pillar-item {
+            padding: 1.25rem;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.2s;
+        }
+        .pillar-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
     </style>
 </head>
 <body>
@@ -167,35 +177,49 @@
             </div>
         </div>
 
-        <!-- Breakdown -->
+        <!-- Filary percepcji profilu -->
         <div class="card mb-5">
             <div class="card-body">
-                <h3 class="card-title mb-4">Szczegółowa analiza profilu</h3>
-                @foreach($report->score_breakdown as $key => $component)
-                    @if(!($component['unknown'] ?? false))
-                    <div class="breakdown-item">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="card-title mb-0">{{ $publicData['header']['title'] }}</h3>
+                    <span class="badge bg-label-info">{{ $publicData['header']['badge'] }}</span>
+                </div>
+                <p class="text-muted mb-4">{{ $publicData['header']['subtitle'] }}</p>
+                
+                @foreach($publicData['pillars'] as $pillar)
+                <div class="pillar-item mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <strong>{{ ucfirst(str_replace('_', ' ', $key)) }}</strong>
-                            <br>
-                            <small class="text-muted">{{ $component['note'] ?? '' }}</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge-score {{ 'bg-' . ($component['score'] >= 4.0 ? 'success' : ($component['score'] >= 3.0 ? 'warning' : 'danger')) }}">
-                                {{ number_format($component['score'], 1) }} / 5.0
-                            </span>
+                            <h5 class="mb-1" style="color: {{ $pillar['color'] }}">
+                                {{ $pillar['name'] }}
+                                <span class="badge ms-2" style="background-color: {{ $pillar['color'] }}; color: white; font-weight: 600;">
+                                    {{ $pillar['status'] }}
+                                </span>
+                            </h5>
                         </div>
                     </div>
-                    @endif
+                    <p class="text-muted mb-0" style="font-size: 0.95rem;">{{ $pillar['insight'] }}</p>
+                </div>
                 @endforeach
+                
+                @if(!empty($publicData['recommended_modules']))
+                <div class="mt-4 pt-4 border-top">
+                    <h6 class="mb-3">Sugerowane obszary pracy:</h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach($publicData['recommended_modules'] as $module)
+                        <span class="badge bg-label-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">{{ $module }}</span>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
 
         <!-- CTA -->
         <div class="cta-section">
-            <h2 class="mb-4">Chcesz poprawić swoją widoczność?</h2>
-            <p class="lead mb-4">Skorzystaj z naszych usług SEO i SEM</p>
-            <button class="cta-btn btn btn-light">SEO - 399 zł/mies</button>
-            <button class="cta-btn btn btn-outline-light">SEM + SEO - 799 zł/mies</button>
+            <h2 class="mb-4">Gotowy na następny krok?</h2>
+            <p class="lead mb-4">{{ $publicData['cta'] }}</p>
+            <button class="cta-btn btn btn-light">Umów bezpłatną konsultację</button>
         </div>
 
         <div class="text-center mt-5">

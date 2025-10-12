@@ -6,6 +6,7 @@ use App\Models\Lead;
 use App\Models\Report;
 use App\Models\ReportGenerationJob;
 use App\Jobs\GenerateReportJob;
+use App\Services\Report\ReportPublicTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -91,7 +92,13 @@ class ReportController extends Controller
         $report = Report::with(['competitors'])->where('key', $key)->firstOrFail();
         
         $report->incrementViews();
+        
+        // Transformuj dane techniczne na format PUBLIC
+        $publicData = ReportPublicTransformer::transform([
+            'query' => $report->search_query,
+            'components' => $report->score_breakdown,
+        ]);
 
-        return view('content.reports.show', compact('report'));
+        return view('content.reports.show', compact('report', 'publicData'));
     }
 }
