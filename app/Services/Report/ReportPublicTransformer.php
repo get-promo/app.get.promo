@@ -74,7 +74,7 @@ class ReportPublicTransformer
         
         return [
             'name' => 'Zaufanie',
-            'description' => 'Jak klienci odbierają Twój profil — czy wygląda wiarygodnie i profesjonalnie.',
+            'description' => 'Jak klienci postrzegają profil — czy wygląda wiarygodnie i profesjonalnie.',
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getZaufanieInsight($avgScore),
@@ -95,7 +95,7 @@ class ReportPublicTransformer
         
         return [
             'name' => 'Dopasowanie',
-            'description' => 'Czy opis i oferta jasno pokazują, czym się zajmujesz i do kogo kierujesz swoją usługę.',
+            'description' => 'Czy opis i oferta jasno pokazują, czym się zajmujesz i co klient zyskuje.',
             'status' => self::getStatus($score),
             'color' => self::getColor($score),
             'insight' => self::getDopasowanieInsight($score),
@@ -122,7 +122,7 @@ class ReportPublicTransformer
         
         return [
             'name' => 'Aktywność',
-            'description' => 'Czy profil wygląda na aktualny i aktywny.',
+            'description' => 'Czy profil wygląda na aktualny i pokazuje, że firma faktycznie działa.',
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getAktywnoscInsight($avgScore),
@@ -176,7 +176,7 @@ class ReportPublicTransformer
         
         return [
             'name' => 'Spójność',
-            'description' => 'Czy wszystkie dane są kompletne, aktualne i łatwe do znalezienia.',
+            'description' => 'Czy dane są kompletne, aktualne i spójne między wszystkimi elementami.',
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getSpojnoscInsight($avgScore),
@@ -191,7 +191,7 @@ class ReportPublicTransformer
         if ($score < 3.0) {
             return 'Słabo';
         } elseif ($score < 4.0) {
-            return 'Wymaga uwagi';
+            return 'Wymaga poprawy';
         } else {
             return 'Dobra kondycja';
         }
@@ -217,11 +217,11 @@ class ReportPublicTransformer
     private static function getZaufanieInsight(float $score): string
     {
         if ($score < 3.0) {
-            return 'Twój profil nie wygląda jeszcze w pełni wiarygodnie. Część informacji może zniechęcać klientów lub wzbudzać wątpliwości. Warto się temu przyjrzeć, bo to wpływa na decyzję o kontakcie.';
+            return 'Twój profil nie wygląda wiarygodnie. Brakuje elementów, które budują zaufanie — przez to klienci mogą nie być pewni, czy warto się skontaktować. To poważny sygnał ostrzegawczy.';
         } elseif ($score < 4.0) {
-            return 'Profil jest w porządku, ale można poprawić kilka elementów, które pomogą klientom zaufać szybciej. Drobne rzeczy potrafią zrobić duże wrażenie.';
+            return 'Profil sprawia przeciętne wrażenie i nie budzi pełnego zaufania. Klienci mogą czuć niepewność lub zrezygnować przed kontaktem. Ten obszar zdecydowanie wymaga poprawy.';
         } else {
-            return 'Twój profil wygląda wiarygodnie i budzi zaufanie. Klienci zyskują wrażenie, że mają do czynienia z rzetelną firmą.';
+            return 'Twój profil wygląda wiarygodnie i budzi zaufanie. Klienci czują, że mają do czynienia z solidną, sprawdzoną firmą.';
         }
     }
     
@@ -231,11 +231,11 @@ class ReportPublicTransformer
     private static function getDopasowanieInsight(float $score): string
     {
         if ($score < 3.0) {
-            return 'Profil nie do końca pokazuje, czym zajmuje się Twoja firma. Klient może mieć trudność z rozpoznaniem, czy oferta jest dla niego.';
+            return 'Profil nie pokazuje jasno, czym zajmuje się Twoja firma. Klienci mogą mieć wątpliwości, czy oferta jest dla nich i szybko przejść do konkurencji.';
         } elseif ($score < 4.0) {
-            return 'Część informacji może być nie do końca jasna. Warto doprecyzować przekaz, by klient szybciej zrozumiał, czym się zajmujesz.';
+            return 'Opis oferty jest niepełny lub zbyt ogólny. Klient nie zawsze rozumie, czym dokładnie się zajmujesz. Ten obszar wymaga dopracowania, by uniknąć utraty klientów.';
         } else {
-            return 'Twoja oferta jest dobrze pokazana. Klient od razu wie, czym się zajmujesz i łatwo ocenia, że oferta pasuje do jego potrzeb.';
+            return 'Oferta jest opisana jasno i konkretnie. Klienci od razu rozumieją, czym się zajmujesz i co możesz im zaoferować.';
         }
     }
     
@@ -245,11 +245,11 @@ class ReportPublicTransformer
     private static function getAktywnoscInsight(float $score): string
     {
         if ($score < 3.0) {
-            return 'Profil sprawia wrażenie nieaktualnego. Klienci mogą odnieść wrażenie, że firma nie działa lub trudno się z nią skontaktować.';
+            return 'Twój profil sprawia wrażenie nieaktualnego. Brakuje oznak, że firma działa. To może powodować utratę zaufania i kontaktów.';
         } elseif ($score < 4.0) {
-            return 'Twój profil wygląda poprawnie, ale widać, że był aktualizowany jakiś czas temu. Dla klientów to może być sygnał, że firma działa rzadziej.';
+            return 'Profil wygląda na rzadko aktualizowany. Klienci mogą mieć wątpliwości, czy firma jest aktywna. To sygnał, że warto przywrócić profilowi życie.';
         } else {
-            return 'Profil wygląda świeżo i aktywnie. Klienci widzą, że firma działa i można na nią liczyć.';
+            return 'Twój profil wygląda świeżo i aktywnie. Klienci widzą, że firma funkcjonuje na bieżąco.';
         }
     }
     
@@ -259,11 +259,11 @@ class ReportPublicTransformer
     private static function getPrezentacjaInsight(float $score): string
     {
         if ($score < 3.0) {
-            return 'Profil wygląda surowo i może nie zachęcać klientów. Brakuje mu spójnego stylu i charakteru, który przyciąga uwagę.';
+            return 'Profil wygląda nieatrakcyjnie i nie zachęca do kontaktu. Brakuje wrażenia profesjonalizmu, przez co klienci mogą go pominąć.';
         } elseif ($score < 4.0) {
-            return 'Profil jest poprawny, ale wygląda przeciętnie. Warto go dopracować, by był bardziej atrakcyjny wizualnie.';
+            return 'Profil wygląda przeciętnie i nie przyciąga uwagi. To może powodować, że klienci szybciej wybierają inne firmy. Warto go odświeżyć.';
         } else {
-            return 'Profil prezentuje się estetycznie i profesjonalnie. Klient ma pozytywne pierwsze wrażenie.';
+            return 'Profil prezentuje się estetycznie i profesjonalnie. Klient ma dobre pierwsze wrażenie.';
         }
     }
     
@@ -273,11 +273,11 @@ class ReportPublicTransformer
     private static function getSpojnoscInsight(float $score): string
     {
         if ($score < 3.0) {
-            return 'Niektóre dane o firmie są niepełne lub nieaktualne. Klient może mieć trudność z kontaktem lub sprawdzeniem szczegółów.';
+            return 'W profilu brakuje ważnych informacji o firmie lub dane są niespójne. Klienci mogą mieć trudność z kontaktem lub nie mieć pewności, czy firma działa.';
         } elseif ($score < 4.0) {
-            return 'Wszystkie najważniejsze informacje są obecne, ale warto sprawdzić, czy są aktualne i jednolite. Spójność ułatwia zaufanie.';
+            return 'Część informacji w profilu może być niepełna lub nieaktualna. Klienci mogą się wahać, zanim podejmą kontakt. To obszar, który warto uporządkować.';
         } else {
-            return 'Dane Twojej firmy są kompletne i spójne. Klient bez problemu znajdzie to, czego potrzebuje.';
+            return 'Dane Twojej firmy są kompletne i spójne. Klienci łatwo znajdują wszystkie potrzebne informacje.';
         }
     }
     
@@ -293,7 +293,7 @@ class ReportPublicTransformer
         foreach ($pillars as $pillar) {
             if ($pillar['status'] === 'Słabo') {
                 $slabCount++;
-            } elseif ($pillar['status'] === 'Wymaga uwagi') {
+            } elseif ($pillar['status'] === 'Wymaga poprawy') {
                 $wymagaCount++;
             } else {
                 $dobraCount++;
