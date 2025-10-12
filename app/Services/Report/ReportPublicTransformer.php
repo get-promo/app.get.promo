@@ -26,8 +26,8 @@ class ReportPublicTransformer
         // Oceń status każdego filaru
         $pillars = [
             self::evaluateZaufanie($components),
-            self::evaluateRelewancja($components),
-            self::evaluateObecnosc($components),
+            self::evaluateDopasowanie($components),
+            self::evaluateAktywnosc($components),
             self::evaluatePrezentacja($components),
             self::evaluateSpojosc($components),
         ];
@@ -74,6 +74,7 @@ class ReportPublicTransformer
         
         return [
             'name' => 'Zaufanie',
+            'description' => 'Jak klienci odbierają Twój profil — czy wygląda wiarygodnie i profesjonalnie.',
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getZaufanieInsight($avgScore),
@@ -81,10 +82,10 @@ class ReportPublicTransformer
     }
     
     /**
-     * Oceń filar: Relewancja
+     * Oceń filar: Dopasowanie
      * Mapuje: categories
      */
-    private static function evaluateRelewancja(array $components): array
+    private static function evaluateDopasowanie(array $components): array
     {
         $score = 0;
         
@@ -93,18 +94,19 @@ class ReportPublicTransformer
         }
         
         return [
-            'name' => 'Relewancja',
+            'name' => 'Dopasowanie',
+            'description' => 'Czy opis i oferta jasno pokazują, czym się zajmujesz i do kogo kierujesz swoją usługę.',
             'status' => self::getStatus($score),
             'color' => self::getColor($score),
-            'insight' => self::getRelewancjaInsight($score),
+            'insight' => self::getDopasowanieInsight($score),
         ];
     }
     
     /**
-     * Oceń filar: Obecność
+     * Oceń filar: Aktywność
      * Mapuje: posts + photos (freshness)
      */
-    private static function evaluateObecnosc(array $components): array
+    private static function evaluateAktywnosc(array $components): array
     {
         $scores = [];
         
@@ -119,10 +121,11 @@ class ReportPublicTransformer
         $avgScore = !empty($scores) ? array_sum($scores) / count($scores) : 0;
         
         return [
-            'name' => 'Obecność',
+            'name' => 'Aktywność',
+            'description' => 'Czy profil wygląda na aktualny i aktywny.',
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
-            'insight' => self::getObecnoscInsight($avgScore),
+            'insight' => self::getAktywnoscInsight($avgScore),
         ];
     }
     
@@ -146,6 +149,7 @@ class ReportPublicTransformer
         
         return [
             'name' => 'Prezentacja',
+            'description' => 'Jak Twój profil wygląda wizualnie i czy zachęca do kontaktu.',
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getPrezentacjaInsight($avgScore),
@@ -172,6 +176,7 @@ class ReportPublicTransformer
         
         return [
             'name' => 'Spójność',
+            'description' => 'Czy wszystkie dane są kompletne, aktualne i łatwe do znalezienia.',
             'status' => self::getStatus($avgScore),
             'color' => self::getColor($avgScore),
             'insight' => self::getSpojnoscInsight($avgScore),
@@ -183,12 +188,12 @@ class ReportPublicTransformer
      */
     private static function getStatus(float $score): string
     {
-        if ($score < 2.5) {
-            return '🔴 ryzyko';
+        if ($score < 3.0) {
+            return 'Słabo';
         } elseif ($score < 4.0) {
-            return '🟠 do wzmocnienia';
+            return 'Wymaga uwagi';
         } else {
-            return '🟢 stabilnie';
+            return 'Dobra kondycja';
         }
     }
     
@@ -197,10 +202,12 @@ class ReportPublicTransformer
      */
     private static function getColor(float $score): string
     {
-        if ($score < 2.5) {
+        if ($score < 3.0) {
             return '#f35023';
-        } else {
+        } elseif ($score < 4.0) {
             return '#ffb900';
+        } else {
+            return '#7eba01';
         }
     }
     
@@ -209,40 +216,40 @@ class ReportPublicTransformer
      */
     private static function getZaufanieInsight(float $score): string
     {
-        if ($score < 2.5) {
-            return 'Wybrane sygnały mogą osłabiać poczucie bezpieczeństwa wyboru.';
+        if ($score < 3.0) {
+            return 'Twój profil nie wygląda jeszcze w pełni wiarygodnie. Część informacji może zniechęcać klientów lub wzbudzać wątpliwości. Warto się temu przyjrzeć, bo to wpływa na decyzję o kontakcie.';
         } elseif ($score < 4.0) {
-            return 'Percepcja opieki posprzedażowej nie jest w pełni odczuwalna.';
+            return 'Profil jest w porządku, ale można poprawić kilka elementów, które pomogą klientom zaufać szybciej. Drobne rzeczy potrafią zrobić duże wrażenie.';
         } else {
-            return 'Sygnały wiarygodności działają stabilnie.';
+            return 'Twój profil wygląda wiarygodnie i budzi zaufanie. Klienci zyskują wrażenie, że mają do czynienia z rzetelną firmą.';
         }
     }
     
     /**
-     * Insight dla Relewancji
+     * Insight dla Dopasowania
      */
-    private static function getRelewancjaInsight(float $score): string
+    private static function getDopasowanieInsight(float $score): string
     {
-        if ($score < 2.5) {
-            return 'Dopasowanie do intencji jest ograniczone — komunikat nie trafia szeroko.';
+        if ($score < 3.0) {
+            return 'Profil nie do końca pokazuje, czym zajmuje się Twoja firma. Klient może mieć trudność z rozpoznaniem, czy oferta jest dla niego.';
         } elseif ($score < 4.0) {
-            return 'Dopasowanie tematyczne do intencji wyszukiwań jest częściowe.';
+            return 'Część informacji może być nie do końca jasna. Warto doprecyzować przekaz, by klient szybciej zrozumiał, czym się zajmujesz.';
         } else {
-            return 'Zakres tematyczny buduje trafne oczekiwania.';
+            return 'Twoja oferta jest dobrze pokazana. Klient od razu wie, czym się zajmujesz i łatwo ocenia, że oferta pasuje do jego potrzeb.';
         }
     }
     
     /**
-     * Insight dla Obecności
+     * Insight dla Aktywności
      */
-    private static function getObecnoscInsight(float $score): string
+    private static function getAktywnoscInsight(float $score): string
     {
-        if ($score < 2.5) {
-            return 'Rytm sygnałów nie buduje wrażenia bieżącej aktywności.';
+        if ($score < 3.0) {
+            return 'Profil sprawia wrażenie nieaktualnego. Klienci mogą odnieść wrażenie, że firma nie działa lub trudno się z nią skontaktować.';
         } elseif ($score < 4.0) {
-            return 'Rytm sygnałów nie potwierdza bieżącej aktywności marki.';
+            return 'Twój profil wygląda poprawnie, ale widać, że był aktualizowany jakiś czas temu. Dla klientów to może być sygnał, że firma działa rzadziej.';
         } else {
-            return 'Odczuwalna, regularna obecność w punktach styku.';
+            return 'Profil wygląda świeżo i aktywnie. Klienci widzą, że firma działa i można na nią liczyć.';
         }
     }
     
@@ -251,12 +258,12 @@ class ReportPublicTransformer
      */
     private static function getPrezentacjaInsight(float $score): string
     {
-        if ($score < 2.5) {
-            return 'Warstwa wizualno-opisowa nie tworzy spójnej narracji o wartości oferty.';
+        if ($score < 3.0) {
+            return 'Profil wygląda surowo i może nie zachęcać klientów. Brakuje mu spójnego stylu i charakteru, który przyciąga uwagę.';
         } elseif ($score < 4.0) {
-            return 'Narracja wizualna i opis nie tworzą jeszcze kompletnej historii miejsca.';
+            return 'Profil jest poprawny, ale wygląda przeciętnie. Warto go dopracować, by był bardziej atrakcyjny wizualnie.';
         } else {
-            return 'Warstwa prezentacji harmonijnie porządkuje oczekiwania odbiorcy.';
+            return 'Profil prezentuje się estetycznie i profesjonalnie. Klient ma pozytywne pierwsze wrażenie.';
         }
     }
     
@@ -265,12 +272,12 @@ class ReportPublicTransformer
      */
     private static function getSpojnoscInsight(float $score): string
     {
-        if ($score < 2.5) {
-            return 'Nie wszystkie punkty wiarygodności składają się na pełny obraz kontaktu.';
+        if ($score < 3.0) {
+            return 'Niektóre dane o firmie są niepełne lub nieaktualne. Klient może mieć trudność z kontaktem lub sprawdzeniem szczegółów.';
         } elseif ($score < 4.0) {
-            return 'Część elementów porządkowych wymaga ujednolicenia.';
+            return 'Wszystkie najważniejsze informacje są obecne, ale warto sprawdzić, czy są aktualne i jednolite. Spójność ułatwia zaufanie.';
         } else {
-            return 'Kluczowe elementy porządkują proces decyzyjny bez tarć.';
+            return 'Dane Twojej firmy są kompletne i spójne. Klient bez problemu znajdzie to, czego potrzebuje.';
         }
     }
     
@@ -279,25 +286,25 @@ class ReportPublicTransformer
      */
     private static function determineBadge(array $pillars): string
     {
-        $redCount = 0;
-        $orangeCount = 0;
-        $greenCount = 0;
+        $slabCount = 0;
+        $wymagaCount = 0;
+        $dobraCount = 0;
         
         foreach ($pillars as $pillar) {
-            if (strpos($pillar['status'], '🔴') !== false) {
-                $redCount++;
-            } elseif (strpos($pillar['status'], '🟠') !== false) {
-                $orangeCount++;
+            if ($pillar['status'] === 'Słabo') {
+                $slabCount++;
+            } elseif ($pillar['status'] === 'Wymaga uwagi') {
+                $wymagaCount++;
             } else {
-                $greenCount++;
+                $dobraCount++;
             }
         }
         
-        if ($redCount >= 2) {
+        if ($slabCount >= 2) {
             return 'Priorytet stabilizacji';
-        } elseif ($orangeCount >= 3 && $redCount === 0) {
+        } elseif ($wymagaCount >= 3 && $slabCount === 0) {
             return 'Profil do wzmocnienia w kluczowych obszarach';
-        } elseif ($greenCount >= 3) {
+        } elseif ($dobraCount >= 3) {
             return 'Profil stabilny — potencjał do skalowania';
         } else {
             return 'Profil do wzmocnienia w kluczowych obszarach';
@@ -312,15 +319,15 @@ class ReportPublicTransformer
         $modules = [];
         $modulePool = [
             'Zaufanie' => ['Reputacja+', 'Spójność'],
-            'Relewancja' => ['Semantyka'],
-            'Obecność' => ['Puls Marki'],
+            'Dopasowanie' => ['Semantyka'],
+            'Aktywność' => ['Puls Marki'],
             'Prezentacja' => ['Visual Story'],
             'Spójność' => ['Spójność'],
         ];
         
         foreach ($pillars as $pillar) {
-            // Jeśli filar nie jest zielony
-            if (strpos($pillar['status'], '🟢') === false) {
+            // Jeśli filar nie ma statusu "Dobra kondycja"
+            if ($pillar['status'] !== 'Dobra kondycja') {
                 $pillarName = $pillar['name'];
                 if (isset($modulePool[$pillarName])) {
                     foreach ($modulePool[$pillarName] as $module) {

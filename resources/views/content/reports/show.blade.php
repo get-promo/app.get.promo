@@ -189,16 +189,19 @@
                 @foreach($publicData['pillars'] as $pillar)
                 <div class="pillar-item mb-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h5 class="mb-1" style="color: {{ $pillar['color'] }}">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">
                                 {{ $pillar['name'] }}
-                                <span class="badge ms-2" style="background-color: {{ $pillar['color'] }}; color: white; font-weight: 600;">
+                                <span class="badge ms-2" style="background-color: {{ $pillar['color'] }}; color: white; font-weight: 600; font-size: 0.85rem;">
                                     {{ $pillar['status'] }}
                                 </span>
                             </h5>
+                            <p class="text-muted mb-2" style="font-size: 0.875rem; font-style: italic;">
+                                {{ $pillar['description'] }}
+                            </p>
                         </div>
                     </div>
-                    <p class="text-muted mb-0" style="font-size: 0.95rem;">{{ $pillar['insight'] }}</p>
+                    <p class="mb-0" style="font-size: 0.95rem; line-height: 1.6;">{{ $pillar['insight'] }}</p>
                 </div>
                 @endforeach
                 
