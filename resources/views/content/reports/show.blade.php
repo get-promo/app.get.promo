@@ -11,7 +11,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -24,8 +24,8 @@
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #ffffff;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f1f4f4;
             color: #333333;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
@@ -39,14 +39,25 @@
         
         /* Header */
         .report-header {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px 30px;
             text-align: center;
             margin-bottom: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
         .logo {
-            font-size: 28px;
+            max-width: 396px;
+            width: 100%;
+            margin: 0 auto 30px;
+            display: block;
+        }
+        
+        .logo-text {
+            font-size: 60px;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         
         .logo-get {
@@ -65,10 +76,10 @@
         }
         
         .report-title {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 44px;
+            font-weight: 700;
             color: #333;
-            margin-bottom: 10px;
+            line-height: 1.2;
         }
         
         /* Score Section */
@@ -494,9 +505,7 @@
     <div class="report-container">
         <!-- Header -->
         <div class="report-header">
-            <div class="logo">
-                <span class="logo-get">get</span><span class="logo-dot">.</span><span class="logo-promo">promo</span>
-            </div>
+            <img src="{{ asset('assets/img/logo.svg') }}" alt="get.promo" class="logo">
             <h1 class="report-title">Raport pozycji i potencjału Twojego lokalu</h1>
         </div>
 
