@@ -1116,10 +1116,10 @@
                 $optimizationColor = '#bd3544'; // czerwony
             } elseif ($report->profile_quality_score >= 4.0 && $report->position > 10) {
                 $optimizationMessage = 'Twój profil jest solidny, ale jego pozycja mogłaby być znacznie wyższa.';
-                $optimizationColor = '#7fba00'; // zielony
+                $optimizationColor = '#ff8900'; // pomarańczowy
             } else {
                 $optimizationMessage = 'Twój profil prezentuje się świetnie — wzmocnij go dodatkowo reklamą Google Ads, by przyciągnąć jeszcze więcej klientów.';
-                $optimizationColor = '#ff8900'; // pomarańczowy
+                $optimizationColor = '#7fba00'; // zielony
             }
         @endphp
         <div class="optimization-bar" style="background: {{ $optimizationColor }};">{{ $optimizationMessage }}</div>
