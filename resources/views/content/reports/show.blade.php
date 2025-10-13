@@ -764,7 +764,6 @@
         
         /* Optimization Bar */
         .optimization-bar {
-            background: #dc3545;
             color: white;
             font-weight: 700;
             font-size: 28px;
@@ -1114,13 +1113,16 @@
             // Komunikat B - pod Spójnością nad Mateuszem
             if ($report->profile_quality_score < 4.0) {
                 $optimizationMessage = 'Twój profil wymaga optymalizacji';
+                $optimizationColor = '#bd3544'; // czerwony
             } elseif ($report->profile_quality_score >= 4.0 && $report->position > 10) {
                 $optimizationMessage = 'Twój profil jest solidny, ale jego pozycja mogłaby być znacznie wyższa.';
+                $optimizationColor = '#7fba00'; // zielony
             } else {
                 $optimizationMessage = 'Twój profil prezentuje się świetnie — wzmocnij go dodatkowo reklamą Google Ads, by przyciągnąć jeszcze więcej klientów.';
+                $optimizationColor = '#ff8900'; // pomarańczowy
             }
         @endphp
-        <div class="optimization-bar">{{ $optimizationMessage }}</div>
+        <div class="optimization-bar" style="background: {{ $optimizationColor }};">{{ $optimizationMessage }}</div>
 
         <!-- Expert Section -->
         <div class="expert-card">
