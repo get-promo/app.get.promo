@@ -480,23 +480,26 @@
         }
         .brand-left {
             display: flex;
-            flex-direction: column;
             align-items: flex-start;
-            gap: 10px;
             flex: 1;
         }
-        .brand-logo { width: 160px; min-width: 140px; }
+
+        .brand-right { 
+            text-align: right; 
+            flex: 1; 
+            color: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .brand-logo { width: 160px; min-width: 140px; margin-left: auto; }
         .brand-logo svg { width: 100%; height: auto; display: block; }
         .brand-left-text { color: #333; }
         .brand-left-text .line-1 { font-size: 16px; }
         .brand-left-text .line-2 { font-size: 20px; font-weight: 800; }
-
-        .brand-center { display: flex; align-items: center; justify-content: center; flex: 1; }
-
-        .brand-right { text-align: right; flex: 1; color: #111; }
-        .brand-right .company-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-        .brand-right .company-addr { font-size: 12px; line-height: 1.4; }
-        .brand-right .company-legal { font-size: 12px; margin-top: 12px; line-height: 1.6; }
+        .brand-right .company-addr { font-size: 12px; line-height: 1.4; text-align: right; }
+        .brand-right .company-legal { font-size: 12px; line-height: 1.6; text-align: right; }
 
         @media (max-width: 768px) {
             .brand-footer { flex-direction: column; text-align: center; align-items: center; }
@@ -1154,6 +1157,9 @@
         <!-- Brand Footer block -->
         <div class="brand-footer">
             <div class="brand-left">
+                <img src="/assets/img/powered-by-ai.png" alt="Powered by AI" style="width: 160px;">
+            </div>
+            <div class="brand-right">
                 <div class="brand-logo">
                     <!-- get.promo logo SVG, width 160px -->
                     <svg viewBox="0 0 897 187" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1172,12 +1178,6 @@
                     <div class="line-1">is a proud member of</div>
                     <div class="line-2">Keen Group Ltd</div>
                 </div>
-            </div>
-            <div class="brand-center">
-                <img src="/assets/img/powered-by-ai.png" alt="Powered by AI" style="width: 160px;">
-            </div>
-            <div class="brand-right">
-                <div class="company-name">Keen Group Sp. z o.o.</div>
                 <div class="company-addr">Al. Jerozolimskie 89/43<br>02-001 Warszawa</div>
                 <div class="company-legal">
                     NIP: 7011202113<br>
