@@ -13,8 +13,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- MapLibre GL CSS -->
+    <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
     
     <style>
         * {
@@ -48,8 +48,7 @@
         }
         
         .logo {
-            max-width: 396px;
-            width: 100%;
+            width: 250px;
             margin: 0 auto 30px;
             display: block;
         }
@@ -61,95 +60,134 @@
         }
         
         .report-title {
-            font-size: 44px;
+            font-size: 28px;
             font-weight: 700;
             color: #333;
             line-height: 1.2;
         }
         
         /* Score Section */
-        .scores-section {
+        .scores-container {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            gap: 20px;
             margin-bottom: 40px;
-            gap: 30px;
         }
         
-        .main-scores {
-            flex: 1;
-        }
-        
-        .score-big {
-            margin-bottom: 25px;
-        }
-        
-        .score-label-small {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        
-        .score-number {
-            font-size: 56px;
-            font-weight: 800;
-            line-height: 1;
-        }
-        
-        .score-green {
-            color: #7eba01;
-        }
-        
-        .score-yellow {
-            color: #ffb900;
-        }
-        
-        .score-red {
-            color: #f35023;
-        }
-        
-        /* Breakdown Pills */
-        .breakdown-pills {
+        .score-column-left {
+            flex: 0 0 25%;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            min-width: 200px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
         }
         
-        .pill {
+        .score-column-right {
+            flex: 0 0 calc(75% - 15px);
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .score-label {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .score-value {
+            font-size: 68px;
+            font-weight: 900;
+            color: #333;
+        }
+        
+        .quality-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pillars-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        
+        .pillar-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 6px 12px;
-            border-radius: 20px;
+            justify-content: flex-end;
+            gap: 7px;
+            font-size: 14px;
+        }
+        
+        .pillar-metric-name {
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            text-align: right;
+        }
+        
+        .pillar-value {
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .pillar-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .progress-bar-container {
+            width: 170px;
+            height: 14px;
+            background: #f0f0f0;
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            transition: width 0.6s ease;
+            border-radius: 10px;
+        }
+        
+        .pillar-score {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 11px;
-            font-weight: 600;
-            color: white;
+            font-weight: 700;
+            pointer-events: none;
         }
         
-        .pill-text {
-            flex: 1;
-        }
-        
-        .pill-score {
-            font-size: 13px;
-            margin-left: 8px;
-        }
-        
-        .pill-green {
+        .progress-bar-fill.green {
             background: #7eba01;
         }
         
-        .pill-yellow {
+        .progress-bar-fill.yellow {
             background: #ffb900;
         }
         
-        .pill-orange {
-            background: #ff9500;
-        }
-        
-        .pill-red {
+        .progress-bar-fill.red {
             background: #f35023;
         }
         
@@ -159,6 +197,7 @@
             width: 100%;
             border-radius: 12px;
             margin-bottom: 40px;
+            margin-top: -80px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
@@ -463,12 +502,17 @@
         
         /* Responsive */
         @media (max-width: 768px) {
-            .scores-section {
+            .scores-container {
                 flex-direction: column;
             }
             
-            .breakdown-pills {
-                width: 100%;
+            .score-column-left,
+            .score-column-right {
+                flex: 1;
+            }
+            
+            .score-column-right {
+                flex-direction: column;
             }
             
             .top10-content {
@@ -507,29 +551,40 @@
         </div>
 
         <!-- Scores Section -->
-        <div class="scores-section">
-            <div class="main-scores">
-                <div class="score-big">
-                    <div class="score-label-small">Ocena pozycji</div>
-                    <div class="score-number score-{{ $report->position_score >= 4.0 ? 'green' : ($report->position_score >= 3.0 ? 'yellow' : 'red') }}">
-                        {{ number_format($report->position_score, 1) }}
-                    </div>
-                </div>
-                <div class="score-big">
-                    <div class="score-label-small">Jakość profilu</div>
-                    <div class="score-number score-{{ $report->profile_quality_score >= 4.0 ? 'green' : ($report->profile_quality_score >= 3.0 ? 'yellow' : 'red') }}">
-                        {{ number_format($report->profile_quality_score, 1) }}
-                    </div>
-                </div>
+        <div class="scores-container">
+            <div class="score-column-left">
+                <div class="score-label">Ocena pozycji</div>
+                @php
+                    $positionColor = $report->position_score >= 4.0 ? '#7eba01' : ($report->position_score >= 3.0 ? '#ffb900' : '#f35023');
+                @endphp
+                <div class="score-value" style="color: {{ $positionColor }};">{{ number_format($report->position_score, 1) }}</div>
             </div>
             
-            <div class="breakdown-pills">
-                @foreach($publicData['pillars'] as $pillar)
-                <div class="pill pill-{{ $pillar['score'] >= 4.0 ? 'green' : ($pillar['score'] >= 3.0 ? ($pillar['score'] >= 3.5 ? 'yellow' : 'orange') : 'red') }}">
-                    <span class="pill-text">{{ $pillar['name'] }}</span>
-                    <span class="pill-score">{{ number_format($pillar['score'], 1) }}</span>
+            <div class="score-column-right">
+                <div class="quality-section">
+                    <div class="score-label">Jakość profilu</div>
+                    @php
+                        $qualityColor = $report->profile_quality_score >= 4.0 ? '#7eba01' : ($report->profile_quality_score >= 3.0 ? '#ffb900' : '#f35023');
+                    @endphp
+                    <div class="score-value" style="color: {{ $qualityColor }};">{{ number_format($report->profile_quality_score, 1) }}</div>
                 </div>
-                @endforeach
+                
+                <div class="pillars-section">
+                    @foreach($publicData['pillars'] as $pillar)
+                    <div class="pillar-row">
+                        <span class="pillar-metric-name">{{ $pillar['name'] }}</span>
+                        <div class="progress-bar-container">
+                            @php
+                                $percentage = ($pillar['score'] / 5.0) * 100;
+                                $colorClass = $pillar['score'] >= 4.0 ? 'green' : ($pillar['score'] >= 3.0 ? 'yellow' : 'red');
+                                $textColor = $pillar['score'] < 3.0 ? '#333' : '#fff';
+                            @endphp
+                            <div class="progress-bar-fill {{ $colorClass }}" style="width: {{ $percentage }}%;"></div>
+                            <span class="pillar-score" style="color: {{ $textColor }};">{{ number_format($pillar['score'], 1) }}</span>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
             </div>
         </div>
 
@@ -675,16 +730,29 @@
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
     
     <script>
-        // Initialize map
-        const map = L.map('map').setView([{{ $report->places_data['latitude'] ?? 52.2297 }}, {{ $report->places_data['longitude'] ?? 21.0122 }}], 13);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+        // Function to create custom marker element
+        function createCustomMarker(position, color, size = 30) {
+            const el = document.createElement('div');
+            el.className = 'custom-marker';
+            el.style.backgroundColor = color;
+            el.style.width = size + 'px';
+            el.style.height = size + 'px';
+            el.style.borderRadius = '50%';
+            el.style.border = '2px solid #fff';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.fontWeight = 'bold';
+            el.style.fontSize = size > 30 ? '16px' : '12px';
+            el.style.color = '#fff';
+            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            el.textContent = `#${position}`;
+            return el;
+        }
 
         // Function to get marker color based on score
         function getMarkerColor(score) {
@@ -693,58 +761,88 @@
             return '#f35023';
         }
 
-        // Add main business marker
-        @if(isset($report->places_data['latitude']) && isset($report->places_data['longitude']))
-        const mainMarker = L.circleMarker([{{ $report->places_data['latitude'] }}, {{ $report->places_data['longitude'] }}], {
-            radius: 12,
-            fillColor: getMarkerColor({{ $report->position_score }}),
-            color: '#000',
-            weight: 3,
-            opacity: 1,
-            fillOpacity: 0.9,
-            zIndexOffset: 1000
-        }).addTo(map);
+        // Collect all coordinates for bounds calculation
+        const allCoordinates = [];
         
-        mainMarker.bindPopup(`
+        // Add main business coordinates
+        @if(isset($report->places_data) && isset($report->places_data['latitude']) && isset($report->places_data['longitude']))
+        allCoordinates.push([{{ $report->places_data['longitude'] }}, {{ $report->places_data['latitude'] }}]);
+        @elseif(isset($report->lead) && $report->lead->latitude && $report->lead->longitude)
+        allCoordinates.push([{{ $report->lead->longitude }}, {{ $report->lead->latitude }}]);
+        @endif
+        
+        // Add competitors coordinates
+        const competitors = @json($report->competitors);
+        competitors.forEach(comp => {
+            if (comp.latitude && comp.longitude) {
+                allCoordinates.push([comp.longitude, comp.latitude]);
+            }
+        });
+
+        // Initialize map
+        const map = new maplibregl.Map({
+            style: 'https://tiles.openfreemap.org/styles/liberty',
+            center: allCoordinates.length > 0 ? allCoordinates[0] : [21.0122, 52.2297],
+            zoom: allCoordinates.length > 1 ? 10 : 13,
+            container: 'map'
+        });
+
+        // Fit map to show all markers after map loads
+        map.on('load', function() {
+            if (allCoordinates.length > 1) {
+                const bounds = new maplibregl.LngLatBounds();
+                allCoordinates.forEach(coord => {
+                    bounds.extend(coord);
+                });
+                map.fitBounds(bounds, { padding: 50 });
+            }
+        });
+
+        // Sort competitors by position (worst to best, excluding our business)
+        const sortedCompetitors = competitors
+            .filter(comp => comp.latitude && comp.longitude)
+            .sort((a, b) => {
+                const posA = parseInt(a.position) || 999;
+                const posB = parseInt(b.position) || 999;
+                return posB - posA; // Sort from worst (highest number) to best (lowest number)
+            });
+
+        // Add competitors markers first (from worst to best position)
+        sortedCompetitors.forEach(comp => {
+            const positionScore = comp.position_score ? parseFloat(comp.position_score) : 0;
+            
+            const markerEl = createCustomMarker(comp.position || 'N/A', getMarkerColor(positionScore));
+            const marker = new maplibregl.Marker({ element: markerEl })
+            .setLngLat([comp.longitude, comp.latitude])
+            .setPopup(new maplibregl.Popup().setHTML(`
+                <strong>${comp.name}</strong><br>
+                Pozycja: ${comp.position || 'N/A'}
+            `))
+            .addTo(map);
+        });
+
+        // Add main business marker last (so it appears on top) - 2x bigger
+        @if(isset($report->places_data) && isset($report->places_data['latitude']) && isset($report->places_data['longitude']))
+        const mainMarkerEl = createCustomMarker({{ $report->position ?? 'N/A' }}, getMarkerColor({{ $report->position_score }}), 60);
+        const mainMarker = new maplibregl.Marker({ element: mainMarkerEl })
+        .setLngLat([{{ $report->places_data['longitude'] }}, {{ $report->places_data['latitude'] }}])
+        .setPopup(new maplibregl.Popup().setHTML(`
             <strong>{{ $report->business_name }}</strong><br>
             Pozycja: {{ $report->position ?? 'N/A' }}<br>
             Score: {{ number_format($report->position_score, 1) }}
-        `);
+        `))
+        .addTo(map);
+        @elseif(isset($report->lead) && $report->lead->latitude && $report->lead->longitude)
+        const mainMarkerEl = createCustomMarker({{ $report->position ?? 'N/A' }}, getMarkerColor({{ $report->position_score }}), 60);
+        const mainMarker = new maplibregl.Marker({ element: mainMarkerEl })
+        .setLngLat([{{ $report->lead->longitude }}, {{ $report->lead->latitude }}])
+        .setPopup(new maplibregl.Popup().setHTML(`
+            <strong>{{ $report->business_name }}</strong><br>
+            Pozycja: {{ $report->position ?? 'N/A' }}<br>
+            Score: {{ number_format($report->position_score, 1) }}
+        `))
+        .addTo(map);
         @endif
-
-        // Add competitors markers
-        const competitors = @json($report->competitors);
-        const bounds = [];
-        
-        @if(isset($report->places_data['latitude']) && isset($report->places_data['longitude']))
-        bounds.push([{{ $report->places_data['latitude'] }}, {{ $report->places_data['longitude'] }}]);
-        @endif
-        
-        competitors.forEach(comp => {
-            if (comp.latitude && comp.longitude) {
-                const positionScore = comp.position_score ? parseFloat(comp.position_score) : 0;
-                
-                const marker = L.circleMarker([comp.latitude, comp.longitude], {
-                    radius: 6,
-                    fillColor: getMarkerColor(positionScore),
-                    color: '#fff',
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.7
-                }).addTo(map);
-                
-                marker.bindPopup(`
-                    <strong>${comp.name}</strong><br>
-                    Pozycja: ${comp.position || 'N/A'}
-                `);
-                
-                bounds.push([comp.latitude, comp.longitude]);
-            }
-        });
-        
-        if (bounds.length > 0) {
-            map.fitBounds(bounds, { padding: [30, 30] });
-        }
     </script>
 </body>
 </html>

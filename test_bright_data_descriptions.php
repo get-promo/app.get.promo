@@ -155,3 +155,4 @@ function fetchBrightData(string $placeId): ?array
     return null;
 }
 
+
