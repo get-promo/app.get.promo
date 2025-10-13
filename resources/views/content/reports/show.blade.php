@@ -975,7 +975,17 @@
                 </div>
                 
                 <div class="ranking-footer">
-                    Twój lokal {{ $report->position <= 10 ? 'jest w TOP 10' : 'jest blisko czołówki' }} – z naszym wsparciem możesz {{ $report->position <= 10 ? 'awansować do' : 'szybko awansować do' }} <strong>TOP 3</strong> i przyciągnąć więcej klientów.<br><br>
+                    @php
+                        // Komunikat A - w rankingu
+                        if ($report->position <= 3) {
+                            $rankingMessage = 'Twój lokal jest w TOP 3!<br>To świetny wynik — Twoja widoczność jest znakomita.<br>Z kampanią Google Ads możesz utrwalić tę pozycję i zdobyć jeszcze więcej klientów.';
+                        } elseif ($report->position <= 10) {
+                            $rankingMessage = 'Twój lokal jest w TOP 10 — jesteś o krok od ścisłej czołówki.<br>Z naszym wsparciem możesz awansować do TOP 3 i przyciągnąć jeszcze więcej klientów.';
+                        } else {
+                            $rankingMessage = 'Twój lokal znajduje się poza TOP 10 wyników.<br>Z pomocą naszych ekspertów możesz poprawić widoczność i dotrzeć do większej liczby klientów w Google.';
+                        }
+                    @endphp
+                    {!! $rankingMessage !!}<br><br>
                     Chcesz poprawić profil i zdobyć wyższą pozycję w rankingu?
                 </div>
                 <a href="tel:+48123456789" class="ranking-button">Dowiedz się więcej</a>
@@ -1100,7 +1110,17 @@
         @endforeach
 
         <!-- Optimization Bar -->
-        <div class="optimization-bar">Twój profil wymaga optymalizacji</div>
+        @php
+            // Komunikat B - pod Spójnością nad Mateuszem
+            if ($report->profile_quality_score < 4.0) {
+                $optimizationMessage = 'Twój profil wymaga optymalizacji';
+            } elseif ($report->profile_quality_score >= 4.0 && $report->position > 10) {
+                $optimizationMessage = 'Twój profil jest solidny, ale jego pozycja mogłaby być znacznie wyższa.';
+            } else {
+                $optimizationMessage = 'Twój profil prezentuje się świetnie — wzmocnij go dodatkowo reklamą Google Ads, by przyciągnąć jeszcze więcej klientów.';
+            }
+        @endphp
+        <div class="optimization-bar">{{ $optimizationMessage }}</div>
 
         <!-- Expert Section -->
         <div class="expert-card">
