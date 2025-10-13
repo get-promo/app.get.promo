@@ -1074,12 +1074,6 @@
             </div>
         </div>
 
-        <!-- Summary -->
-        <div class="summary-box">
-            <div class="summary-text">
-                <strong>Twój lokal jest {{ $report->position <= 10 ? 'w TOP 10' : 'poza TOP 10' }} wyników</strong> – z naszym wsparciem możesz osiągnąć <span class="highlight-yellow">pozycje 1-3 i przyciągać więcej klientów</span>.
-            </div>
-        </div>
 
         <!-- Chcesz poznać profil i zbudować skalę? -->
         <div class="summary-box" style="border-left-color: #4A90E2; margin-bottom: 30px;">
