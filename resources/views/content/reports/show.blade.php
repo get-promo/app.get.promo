@@ -491,10 +491,12 @@
         .brand-left-text .line-1 { font-size: 16px; }
         .brand-left-text .line-2 { font-size: 20px; font-weight: 800; }
 
+        .brand-center { display: flex; align-items: center; justify-content: center; flex: 1; }
+
         .brand-right { text-align: right; flex: 1; color: #111; }
         .brand-right .company-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
         .brand-right .company-addr { font-size: 12px; line-height: 1.4; }
-        .brand-right .company-legal { font-size: 12px; margin-top: 12px; }
+        .brand-right .company-legal { font-size: 12px; margin-top: 12px; line-height: 1.6; }
 
         @media (max-width: 768px) {
             .brand-footer { flex-direction: column; text-align: center; align-items: center; }
@@ -1171,10 +1173,17 @@
                     <div class="line-2">Keen Group Ltd</div>
                 </div>
             </div>
+            <div class="brand-center">
+                <img src="/assets/img/powered-by-ai.png" alt="Powered by AI" style="width: 160px;">
+            </div>
             <div class="brand-right">
                 <div class="company-name">Keen Group Sp. z o.o.</div>
                 <div class="company-addr">Al. Jerozolimskie 89/43<br>02-001 Warszawa</div>
-                <div class="company-legal">NIP: 7011202113 | KRS: 0001101019 | REGON: 528453939</div>
+                <div class="company-legal">
+                    NIP: 7011202113<br>
+                    KRS: 0001101019<br>
+                    REGON: 528453939
+                </div>
             </div>
         </div>
         
