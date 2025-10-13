@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Fast Deploy Script for app.get.promo
-# Usage: ./fast-deploy.sh
+# Usage: /home/admin/scripts/fast-deploy.sh
+# This script should be placed in /home/admin/scripts/ on the server
 
 set -e  # Exit on error
 
