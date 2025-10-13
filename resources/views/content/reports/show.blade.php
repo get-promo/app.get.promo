@@ -1157,7 +1157,7 @@
         <!-- Brand Footer block -->
         <div class="brand-footer">
             <div class="brand-left">
-                <img src="/assets/img/powered-by-ai.png" alt="Powered by AI" style="width: 160px;">
+                <img src="/assets/img/powered-by-ai.png" alt="Powered by AI" style="width: 200px;">
             </div>
             <div class="brand-right">
                 <div class="brand-logo">
@@ -1179,11 +1179,7 @@
                     <div class="line-2">Keen Group Ltd</div>
                 </div>
                 <div class="company-addr">Al. Jerozolimskie 89/43<br>02-001 Warszawa</div>
-                <div class="company-legal">
-                    NIP: 7011202113<br>
-                    KRS: 0001101019<br>
-                    REGON: 528453939
-                </div>
+                <div class="company-legal">NIP: 7011202113 | KRS: 0001101019 | REGON: 528453939</div>
             </div>
         </div>
         
