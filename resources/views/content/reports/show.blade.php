@@ -1179,7 +1179,11 @@
                     <div class="line-2">Keen Group Ltd</div>
                 </div>
                 <div class="company-addr">Al. Jerozolimskie 89/43<br>02-001 Warszawa</div>
-                <div class="company-legal">NIP: 7011202113 | KRS: 0001101019 | REGON: 528453939</div>
+                <div class="company-legal">
+                    NIP: 7011202113<br>
+                    KRS: 0001101019<br>
+                    REGON: 528453939
+                </div>
             </div>
         </div>
         
