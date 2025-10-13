@@ -502,13 +502,14 @@
         .brand-right .company-legal { font-size: 12px; line-height: 1.6; text-align: right; }
 
         @media (max-width: 768px) {
-            .brand-footer { flex-direction: column; text-align: center; align-items: center; }
-            .brand-right { text-align: center; }
+            .brand-footer { flex-direction: column; text-align: center; align-items: center; gap: 30px; }
+            .brand-right { text-align: center; align-items: center; }
             .brand-left { justify-content: center; }
+            .brand-left img { width: 160px !important; }
+            .brand-logo { margin-left: 0; }
             .brand-left-text .line-2 { font-size: 20px; }
-            .brand-right .company-name { font-size: 18px; }
-            .brand-right .company-addr { font-size: 11px; }
-            .brand-right .company-legal { font-size: 11px; }
+            .brand-right .company-addr { font-size: 11px; text-align: center; }
+            .brand-right .company-legal { font-size: 11px; text-align: center; }
         }
         
         /* Ranking Section */
@@ -546,13 +547,13 @@
         }
         
         .position-number {
-            font-size: 64px;
+            font-size: 80px;
             font-weight: 800;
             color: #E63946;
         }
         
         .position-total {
-            font-size: 64px;
+            font-size: 48px;
             font-weight: 700;
             color: #aaa;
         }
@@ -774,7 +775,7 @@
             font-size: 28px;
             text-align: center;
             border-radius: 25px;
-            padding: 30px 0;
+            padding: 30px;
             margin-top: 40px;
         }
 
@@ -842,7 +843,8 @@
         /* Responsive */
         @media (max-width: 992px) {
             .score-value { font-size: 56px; }
-            .position-number { font-size: 56px; }
+            .position-number { font-size: 68px; }
+            .position-total { font-size: 42px; }
             .ranking-left { flex: 0 0 260px; }
             .rank-name { max-width: 240px; }
         }
@@ -858,7 +860,8 @@
 
             .ranking-card { flex-direction: column; gap: 16px; }
             .ranking-left, .ranking-right { flex: 0 0 100%; }
-            .position-number { font-size: 48px; }
+            .position-number { font-size: 60px; }
+            .position-total { font-size: 38px; }
             .rank-name { max-width: 220px; }
             .ranking-item { gap: 10px; }
 
@@ -871,7 +874,8 @@
 
         @media (max-width: 576px) {
             .score-value { font-size: 48px; }
-            .position-number { font-size: 44px; }
+            .position-number { font-size: 52px; }
+            .position-total { font-size: 32px; }
             .rank-name { max-width: 200px; }
             .ranking-item { gap: 8px; }
             .rank-score { min-width: 32px; }
