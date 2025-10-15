@@ -1303,7 +1303,7 @@
         
         // Add competitors markers first (from worst to best position)
         if (shouldAnimate) {
-            // Animowana wersja - markery pojawiają się jeden po drugim
+            // Animowana wersja - markery pojawiają się jeden po drugim z 1s opóźnieniem na start
             sortedCompetitors.forEach((comp, index) => {
                 setTimeout(() => {
                     const positionScore = comp.position_score ? parseFloat(comp.position_score) : 0;
@@ -1316,7 +1316,7 @@
                         Pozycja: ${comp.position || 'N/A'}
                     `))
                     .addTo(map);
-                }, index * 100); // 100ms przerwy między markerami
+                }, 1000 + (index * 100)); // 1000ms opóźnienie na start + 100ms przerwy między markerami
             });
         } else {
             // Normalna wersja - wszystkie markery od razu
@@ -1361,7 +1361,7 @@
         
         // Dodaj główny marker z opóźnieniem jeśli animacja włączona
         if (shouldAnimate) {
-            setTimeout(addMainMarker, sortedCompetitors.length * 100);
+            setTimeout(addMainMarker, 1000 + (sortedCompetitors.length * 100));
         } else {
             addMainMarker();
         }
