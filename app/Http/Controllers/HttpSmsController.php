@@ -12,31 +12,26 @@ use Illuminate\Support\Str;
 class HttpSmsController extends Controller
 {
     /**
-     * Middleware do autentykacji API key
+     * Walidacja API key (wywoływana w każdej metodzie oprócz registerDevice)
      */
-    public function __construct()
+    private function authenticateDevice(Request $request)
     {
-        $this->middleware(function ($request, $next) {
-            $apiKey = $request->header('X-API-Key') ?? $request->input('api_key');
-            
-            if (!$apiKey) {
-                return response()->json(['error' => 'API key required'], 401);
-            }
-            
-            $device = SmsDevice::where('api_key', $apiKey)->active()->first();
-            
-            if (!$device) {
-                return response()->json(['error' => 'Invalid API key'], 401);
-            }
-            
-            // Aktualizuj czas ostatniego kontaktu
-            $device->updateLastSeen();
-            
-            // Dodaj urządzenie do requestu
-            $request->merge(['sms_device' => $device]);
-            
-            return $next($request);
-        });
+        $apiKey = $request->header('X-API-Key') ?? $request->input('api_key');
+        
+        if (!$apiKey) {
+            return response()->json(['error' => 'API key required'], 401);
+        }
+        
+        $device = SmsDevice::where('api_key', $apiKey)->active()->first();
+        
+        if (!$device) {
+            return response()->json(['error' => 'Invalid API key'], 401);
+        }
+        
+        // Aktualizuj czas ostatniego kontaktu
+        $device->updateLastSeen();
+        
+        return $device;
     }
 
     /**
@@ -45,6 +40,9 @@ class HttpSmsController extends Controller
      */
     public function sendMessage(Request $request): JsonResponse
     {
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
+        
         $validator = Validator::make($request->all(), [
             'content' => 'required|string|max:1600',
             'from' => 'required|string',
@@ -57,8 +55,6 @@ class HttpSmsController extends Controller
                 'details' => $validator->errors()
             ], 400);
         }
-
-        $device = $request->sms_device;
         
         // Utwórz wiadomość w bazie danych
         $message = SmsMessage::create([
@@ -88,7 +84,8 @@ class HttpSmsController extends Controller
      */
     public function getMessages(Request $request): JsonResponse
     {
-        $device = $request->sms_device;
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
         
         $query = SmsMessage::where('device_id', $device->device_id);
         
@@ -131,7 +128,8 @@ class HttpSmsController extends Controller
      */
     public function getMessage(Request $request, string $messageId): JsonResponse
     {
-        $device = $request->sms_device;
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
         
         $message = SmsMessage::where('device_id', $device->device_id)
             ->where('message_id', $messageId)
@@ -161,6 +159,9 @@ class HttpSmsController extends Controller
      */
     public function receiveMessage(Request $request): JsonResponse
     {
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
+        
         $validator = Validator::make($request->all(), [
             'content' => 'required|string',
             'from' => 'required|string',
@@ -174,8 +175,6 @@ class HttpSmsController extends Controller
                 'details' => $validator->errors()
             ], 400);
         }
-
-        $device = $request->sms_device;
         
         // Utwórz wiadomość otrzymaną
         $message = SmsMessage::create([
@@ -201,6 +200,9 @@ class HttpSmsController extends Controller
      */
     public function updateMessageStatus(Request $request, string $messageId): JsonResponse
     {
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
+        
         $validator = Validator::make($request->all(), [
             'status' => 'required|in:pending,sent,delivered,failed',
             'metadata' => 'sometimes|array',
@@ -212,8 +214,6 @@ class HttpSmsController extends Controller
                 'details' => $validator->errors()
             ], 400);
         }
-
-        $device = $request->sms_device;
         
         $message = SmsMessage::where('device_id', $device->device_id)
             ->where('message_id', $messageId)
@@ -298,7 +298,8 @@ class HttpSmsController extends Controller
      */
     public function getDeviceStatus(Request $request): JsonResponse
     {
-        $device = $request->sms_device;
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
         
         return response()->json([
             'device_id' => $device->device_id,
@@ -316,7 +317,8 @@ class HttpSmsController extends Controller
      */
     public function heartbeat(Request $request): JsonResponse
     {
-        $device = $request->sms_device;
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
         $device->updateLastSeen();
         
         return response()->json([
