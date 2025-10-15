@@ -403,6 +403,51 @@ class HttpSmsController extends Controller
             'status' => 'success'
         ]);
     }
+    
+    /**
+     * POST /httpSMS/v1/phones
+     * Rejestracja/aktualizacja telefonu (kompatybilność z httpSMS)
+     */
+    public function registerPhone(Request $request): JsonResponse
+    {
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
+
+        // Aktualizuj informacje o urządzeniu jeśli przyszły
+        if ($request->has('fcm_token') || $request->has('phone_number')) {
+            $updateData = [];
+            if ($request->has('phone_number')) {
+                $updateData['phone_number'] = $request->input('phone_number');
+            }
+            if ($request->has('fcm_token')) {
+                $deviceInfo = $device->device_info ?? [];
+                $deviceInfo['fcm_token'] = $request->input('fcm_token');
+                $updateData['device_info'] = $deviceInfo;
+            }
+            if (!empty($updateData)) {
+                $device->update($updateData);
+                $device->refresh();
+            }
+        }
+
+        return response()->json([
+            'data' => [
+                'id' => $device->device_id,
+                'user_id' => $device->device_id,
+                'fcm_token' => $device->device_info['fcm_token'] ?? 'dummy_fcm_token',
+                'phone_number' => $device->phone_number,
+                'messages_per_minute' => 10,
+                'sim' => $request->input('sim', 'SIM1'),
+                'max_send_attempts' => 2,
+                'message_expiration_seconds' => 600,
+                'missed_call_auto_reply' => null,
+                'created_at' => $device->created_at->toISOString(),
+                'updated_at' => $device->updated_at->toISOString(),
+            ],
+            'message' => 'phone registered successfully',
+            'status' => 'success'
+        ], 201);
+    }
 
     /**
      * GET /httpSMS/v1/devices/status

@@ -65,6 +65,7 @@ Route::prefix('httpSMS/v1')->group(function () {
         // Użytkownik i telefony (kompatybilność z httpSMS)
         Route::get('/users/me', [HttpSmsController::class, 'me']);
         Route::get('/phones', [HttpSmsController::class, 'phones']);
+        Route::post('/phones', [HttpSmsController::class, 'registerPhone']);
         
         // Wiadomości SMS
         Route::post('/messages/send', [HttpSmsController::class, 'sendMessage']);
