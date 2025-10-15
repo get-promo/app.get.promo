@@ -54,35 +54,51 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/reports/status/{jobId}', [ReportController::class, 'checkStatus'])->name('reports.check-status');
 });
 
-// httpSMS API Routes (bez middleware auth - używają własnej autentykacji API key)
-Route::prefix('httpSMS/v1')->middleware(\App\Http\Middleware\LogHttpSmsRequests::class)->group(function () {
-    // Rejestracja i logowanie urządzenia (bez autentykacji)
-    Route::post('/devices/register', [HttpSmsController::class, 'registerDevice']);
-    Route::post('/users/login', [HttpSmsController::class, 'login']);
+// httpSMS API Routes - WSZYSTKIE requesty są logowane
+Route::prefix('httpSMS')->middleware(\App\Http\Middleware\LogHttpSmsRequests::class)->group(function () {
+    // Test endpoint
+    Route::get('/test', function () {
+        return response()->json([
+            'message' => 'httpSMS API Server is running!',
+            'endpoints' => [
+                'POST /httpSMS/v1/devices/register' => 'Rejestracja urządzenia Android',
+                'POST /httpSMS/v1/messages/send' => 'Wysyłanie SMS',
+                'GET /httpSMS/v1/messages' => 'Lista wiadomości',
+            ],
+            'server_url' => url('/httpSMS/v1'),
+            'timestamp' => now()->toISOString(),
+        ]);
+    });
     
-    // Wszystkie pozostałe endpointy wymagają autentykacji API key
-    Route::middleware([])->group(function () {
-        // Użytkownik i telefony (kompatybilność z httpSMS)
-        Route::get('/users/me', [HttpSmsController::class, 'me']);
-        Route::get('/phones', [HttpSmsController::class, 'phones']);
-        Route::post('/phones', [HttpSmsController::class, 'registerPhone']);
-        Route::put('/phones/fcm-token', [HttpSmsController::class, 'updateFcmToken']);
+    Route::prefix('v1')->group(function () {
+        // Rejestracja i logowanie urządzenia (bez autentykacji)
+        Route::post('/devices/register', [HttpSmsController::class, 'registerDevice']);
+        Route::post('/users/login', [HttpSmsController::class, 'login']);
         
-        // Wiadomości SMS
-        Route::post('/messages/send', [HttpSmsController::class, 'sendMessage']);
-        Route::get('/messages', [HttpSmsController::class, 'getMessages']);
-        Route::get('/messages/{messageId}', [HttpSmsController::class, 'getMessage']);
-        Route::post('/messages/receive', [HttpSmsController::class, 'receiveMessage']);
-        Route::post('/messages/{messageId}/status', [HttpSmsController::class, 'updateMessageStatus']);
-        
-        // Urządzenia
-        Route::get('/devices/status', [HttpSmsController::class, 'getDeviceStatus']);
-        Route::post('/devices/heartbeat', [HttpSmsController::class, 'heartbeat']);
+        // Wszystkie pozostałe endpointy wymagają autentykacji API key
+        Route::middleware([])->group(function () {
+            // Użytkownik i telefony (kompatybilność z httpSMS)
+            Route::get('/users/me', [HttpSmsController::class, 'me']);
+            Route::get('/phones', [HttpSmsController::class, 'phones']);
+            Route::post('/phones', [HttpSmsController::class, 'registerPhone']);
+            Route::put('/phones/fcm-token', [HttpSmsController::class, 'updateFcmToken']);
+            
+            // Wiadomości SMS
+            Route::post('/messages/send', [HttpSmsController::class, 'sendMessage']);
+            Route::get('/messages', [HttpSmsController::class, 'getMessages']);
+            Route::get('/messages/{messageId}', [HttpSmsController::class, 'getMessage']);
+            Route::post('/messages/receive', [HttpSmsController::class, 'receiveMessage']);
+            Route::post('/messages/{messageId}/status', [HttpSmsController::class, 'updateMessageStatus']);
+            
+            // Urządzenia
+            Route::get('/devices/status', [HttpSmsController::class, 'getDeviceStatus']);
+            Route::post('/devices/heartbeat', [HttpSmsController::class, 'heartbeat']);
+        });
     });
 });
 
-// Test endpoint dla httpSMS API
-Route::get('/httpSMS/test', function () {
+// Stary test endpoint (usunięty - teraz w grupie httpSMS)
+Route::get('/httpSMS-old-test', function () {
     return response()->json([
         'message' => 'httpSMS API Server is running!',
         'endpoints' => [
