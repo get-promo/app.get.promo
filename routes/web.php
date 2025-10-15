@@ -66,6 +66,7 @@ Route::prefix('httpSMS/v1')->middleware(\App\Http\Middleware\LogHttpSmsRequests:
         Route::get('/users/me', [HttpSmsController::class, 'me']);
         Route::get('/phones', [HttpSmsController::class, 'phones']);
         Route::post('/phones', [HttpSmsController::class, 'registerPhone']);
+        Route::put('/phones/fcm-token', [HttpSmsController::class, 'updateFcmToken']);
         
         // Wiadomości SMS
         Route::post('/messages/send', [HttpSmsController::class, 'sendMessage']);

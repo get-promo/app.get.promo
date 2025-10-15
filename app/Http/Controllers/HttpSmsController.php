@@ -448,6 +448,61 @@ class HttpSmsController extends Controller
             'status' => 'success'
         ], 201);
     }
+    
+    /**
+     * PUT /httpSMS/v1/phones/fcm-token
+     * Aktualizacja FCM tokenu (wywoływane przez aplikację Android)
+     */
+    public function updateFcmToken(Request $request): JsonResponse
+    {
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
+
+        $validator = Validator::make($request->all(), [
+            'fcm_token' => 'required|string',
+            'phone_number' => 'required|string',
+            'sim' => 'sometimes|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Validation failed',
+                'status' => 'error',
+                'details' => $validator->errors()
+            ], 400);
+        }
+
+        // Aktualizuj FCM token i numer telefonu
+        $deviceInfo = $device->device_info ?? [];
+        $deviceInfo['fcm_token'] = $request->input('fcm_token');
+        $deviceInfo['sim'] = $request->input('sim', 'SIM1');
+        
+        $device->update([
+            'phone_number' => $request->input('phone_number'),
+            'device_info' => $deviceInfo,
+        ]);
+        
+        $device->refresh();
+
+        return response()->json([
+            'data' => [
+                'id' => $device->device_id,
+                'user_id' => $device->device_id,
+                'fcm_token' => $deviceInfo['fcm_token'],
+                'phone_number' => $device->phone_number,
+                'messages_per_minute' => 10,
+                'sim' => $request->input('sim', 'SIM1'),
+                'max_send_attempts' => 2,
+                'message_expiration_seconds' => 600,
+                'missed_call_auto_reply' => null,
+                'created_at' => $device->created_at->toISOString(),
+                'updated_at' => $device->updated_at->toISOString(),
+            ],
+            'message' => 'fcm token updated successfully',
+            'status' => 'success'
+        ]);
+    }
 
     /**
      * GET /httpSMS/v1/devices/status
