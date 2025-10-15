@@ -270,6 +270,7 @@ class HttpSmsController extends Controller
             return response()->json([
                 'device_id' => $existingDevice->device_id,
                 'api_key' => $existingDevice->api_key,
+                'phone_number' => $existingDevice->phone_number,
                 'message' => 'Device already registered'
             ]);
         }
@@ -288,8 +289,49 @@ class HttpSmsController extends Controller
         return response()->json([
             'device_id' => $device->device_id,
             'api_key' => $device->api_key,
+            'phone_number' => $device->phone_number,
             'message' => 'Device registered successfully'
         ], 201);
+    }
+    
+    /**
+     * POST /httpSMS/v1/users/login
+     * Alternatywny endpoint logowania (dla kompatybilności z aplikacją)
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'phone_number' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'details' => $validator->errors()
+            ], 400);
+        }
+
+        // Znajdź urządzenie po numerze telefonu
+        $device = SmsDevice::where('phone_number', $request->input('phone_number'))->active()->first();
+        
+        if (!$device) {
+            return response()->json([
+                'error' => 'Device not found. Please register first.',
+                'phone_number' => $request->input('phone_number')
+            ], 404);
+        }
+
+        // Aktualizuj ostatni kontakt
+        $device->updateLastSeen();
+
+        return response()->json([
+            'device_id' => $device->device_id,
+            'api_key' => $device->api_key,
+            'phone_number' => $device->phone_number,
+            'device_name' => $device->device_name,
+            'is_active' => $device->is_active,
+            'message' => 'Login successful'
+        ]);
     }
 
     /**
