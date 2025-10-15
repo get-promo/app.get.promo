@@ -1316,7 +1316,7 @@
                         Pozycja: ${comp.position || 'N/A'}
                     `))
                     .addTo(map);
-                }, index * 300); // 300ms przerwy między markerami
+                }, index * 100); // 100ms przerwy między markerami
             });
         } else {
             // Normalna wersja - wszystkie markery od razu
@@ -1361,7 +1361,7 @@
         
         // Dodaj główny marker z opóźnieniem jeśli animacja włączona
         if (shouldAnimate) {
-            setTimeout(addMainMarker, sortedCompetitors.length * 300);
+            setTimeout(addMainMarker, sortedCompetitors.length * 100);
         } else {
             addMainMarker();
         }
