@@ -9,6 +9,7 @@ use App\Http\Controllers\authentications\LoginBasic;
 use App\Http\Controllers\authentications\RegisterBasic;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\HttpSmsController;
 
 // Authentication routes (bez middleware auth)
 Route::get('/login', [LoginBasic::class, 'index'])->name('login');
@@ -51,6 +52,45 @@ Route::middleware(['auth'])->group(function () {
     // Raporty
     Route::post('/leads/{lead}/generate-report', [ReportController::class, 'generate'])->name('leads.generate-report');
     Route::get('/api/reports/status/{jobId}', [ReportController::class, 'checkStatus'])->name('reports.check-status');
+});
+
+// httpSMS API Routes (bez middleware auth - używają własnej autentykacji API key)
+Route::prefix('httpSMS/v1')->group(function () {
+    // Rejestracja urządzenia (bez autentykacji)
+    Route::post('/devices/register', [HttpSmsController::class, 'registerDevice']);
+    
+    // Wszystkie pozostałe endpointy wymagają autentykacji API key
+    Route::middleware([])->group(function () {
+        // Wiadomości SMS
+        Route::post('/messages/send', [HttpSmsController::class, 'sendMessage']);
+        Route::get('/messages', [HttpSmsController::class, 'getMessages']);
+        Route::get('/messages/{messageId}', [HttpSmsController::class, 'getMessage']);
+        Route::post('/messages/receive', [HttpSmsController::class, 'receiveMessage']);
+        Route::post('/messages/{messageId}/status', [HttpSmsController::class, 'updateMessageStatus']);
+        
+        // Urządzenia
+        Route::get('/devices/status', [HttpSmsController::class, 'getDeviceStatus']);
+        Route::post('/devices/heartbeat', [HttpSmsController::class, 'heartbeat']);
+    });
+});
+
+// Test endpoint dla httpSMS API
+Route::get('/httpSMS/test', function () {
+    return response()->json([
+        'message' => 'httpSMS API Server is running!',
+        'endpoints' => [
+            'POST /httpSMS/v1/devices/register' => 'Rejestracja urządzenia Android',
+            'POST /httpSMS/v1/messages/send' => 'Wysyłanie SMS',
+            'GET /httpSMS/v1/messages' => 'Lista wiadomości',
+            'GET /httpSMS/v1/messages/{id}' => 'Szczegóły wiadomości',
+            'POST /httpSMS/v1/messages/receive' => 'Odbieranie SMS',
+            'POST /httpSMS/v1/messages/{id}/status' => 'Aktualizacja statusu',
+            'GET /httpSMS/v1/devices/status' => 'Status urządzenia',
+            'POST /httpSMS/v1/devices/heartbeat' => 'Heartbeat',
+        ],
+        'server_url' => url('/httpSMS/v1'),
+        'timestamp' => now()->toISOString(),
+    ]);
 });
 
 
