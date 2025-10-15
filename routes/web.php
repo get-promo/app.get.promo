@@ -55,7 +55,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // httpSMS API Routes (bez middleware auth - używają własnej autentykacji API key)
-Route::prefix('httpSMS/v1')->group(function () {
+Route::prefix('httpSMS/v1')->middleware(\App\Http\Middleware\LogHttpSmsRequests::class)->group(function () {
     // Rejestracja i logowanie urządzenia (bez autentykacji)
     Route::post('/devices/register', [HttpSmsController::class, 'registerDevice']);
     Route::post('/users/login', [HttpSmsController::class, 'login']);
