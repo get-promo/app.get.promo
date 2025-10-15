@@ -13,19 +13,30 @@ class HttpSmsController extends Controller
 {
     /**
      * Walidacja API key (wywoływana w każdej metodzie oprócz registerDevice)
+     * Obsługuje zarówno x-api-key (oryginalny format) jak i X-API-Key
      */
     private function authenticateDevice(Request $request)
     {
-        $apiKey = $request->header('X-API-Key') ?? $request->input('api_key');
+        $apiKey = $request->header('x-api-key') 
+               ?? $request->header('X-API-Key') 
+               ?? $request->input('api_key');
         
         if (!$apiKey) {
-            return response()->json(['error' => 'API key required'], 401);
+            return response()->json([
+                'data' => null,
+                'message' => 'API key required',
+                'status' => 'error'
+            ], 401);
         }
         
         $device = SmsDevice::where('api_key', $apiKey)->active()->first();
         
         if (!$device) {
-            return response()->json(['error' => 'Invalid API key'], 401);
+            return response()->json([
+                'data' => null,
+                'message' => 'Invalid API key',
+                'status' => 'error'
+            ], 401);
         }
         
         // Aktualizuj czas ostatniego kontaktu
@@ -306,8 +317,9 @@ class HttpSmsController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'error' => 'Validation failed',
-                'details' => $validator->errors()
+                'data' => null,
+                'message' => 'Validation failed',
+                'status' => 'error'
             ], 400);
         }
 
@@ -316,8 +328,9 @@ class HttpSmsController extends Controller
         
         if (!$device) {
             return response()->json([
-                'error' => 'Device not found. Please register first.',
-                'phone_number' => $request->input('phone_number')
+                'data' => null,
+                'message' => 'Device not found. Please register first.',
+                'status' => 'error'
             ], 404);
         }
 
@@ -325,12 +338,69 @@ class HttpSmsController extends Controller
         $device->updateLastSeen();
 
         return response()->json([
-            'device_id' => $device->device_id,
-            'api_key' => $device->api_key,
-            'phone_number' => $device->phone_number,
-            'device_name' => $device->device_name,
-            'is_active' => $device->is_active,
-            'message' => 'Login successful'
+            'data' => [
+                'id' => $device->device_id,
+                'email' => 'user@get.promo',
+                'api_key' => $device->api_key,
+                'timezone' => 'Europe/Warsaw',
+                'active_phone_id' => $device->device_id,
+                'created_at' => $device->created_at->toISOString(),
+                'updated_at' => $device->updated_at->toISOString(),
+            ],
+            'message' => 'user fetched successfully',
+            'status' => 'success'
+        ]);
+    }
+    
+    /**
+     * GET /httpSMS/v1/users/me
+     * Informacje o zalogowanym użytkowniku (kompatybilność z httpSMS)
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
+
+        return response()->json([
+            'data' => [
+                'id' => $device->device_id,
+                'email' => 'user@get.promo',
+                'api_key' => $device->api_key,
+                'timezone' => 'Europe/Warsaw',
+                'active_phone_id' => $device->device_id,
+                'created_at' => $device->created_at->toISOString(),
+                'updated_at' => $device->updated_at->toISOString(),
+            ],
+            'message' => 'user fetched successfully',
+            'status' => 'success'
+        ]);
+    }
+    
+    /**
+     * GET /httpSMS/v1/phones
+     * Lista telefonów (kompatybilność z httpSMS)
+     */
+    public function phones(Request $request): JsonResponse
+    {
+        $device = $this->authenticateDevice($request);
+        if ($device instanceof JsonResponse) return $device;
+
+        return response()->json([
+            'data' => [[
+                'id' => $device->device_id,
+                'user_id' => $device->device_id,
+                'fcm_token' => 'dummy_fcm_token',
+                'phone_number' => $device->phone_number,
+                'messages_per_minute' => 10,
+                'sim' => 'SIM1',
+                'max_send_attempts' => 2,
+                'message_expiration_seconds' => 600,
+                'missed_call_auto_reply' => null,
+                'created_at' => $device->created_at->toISOString(),
+                'updated_at' => $device->updated_at->toISOString(),
+            ]],
+            'message' => 'fetched 1 phone',
+            'status' => 'success'
         ]);
     }
 

@@ -62,6 +62,10 @@ Route::prefix('httpSMS/v1')->group(function () {
     
     // Wszystkie pozostałe endpointy wymagają autentykacji API key
     Route::middleware([])->group(function () {
+        // Użytkownik i telefony (kompatybilność z httpSMS)
+        Route::get('/users/me', [HttpSmsController::class, 'me']);
+        Route::get('/phones', [HttpSmsController::class, 'phones']);
+        
         // Wiadomości SMS
         Route::post('/messages/send', [HttpSmsController::class, 'sendMessage']);
         Route::get('/messages', [HttpSmsController::class, 'getMessages']);
