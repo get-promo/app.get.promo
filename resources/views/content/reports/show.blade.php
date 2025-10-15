@@ -1297,42 +1297,74 @@
                 return posB - posA; // Sort from worst (highest number) to best (lowest number)
             });
 
+        // Check if animate parameter is set
+        const urlParams = new URLSearchParams(window.location.search);
+        const shouldAnimate = urlParams.get('animate') === '1';
+        
         // Add competitors markers first (from worst to best position)
-        sortedCompetitors.forEach(comp => {
-            const positionScore = comp.position_score ? parseFloat(comp.position_score) : 0;
-            
-            const markerEl = createCustomMarker(comp.position || 'N/A', getMarkerColor(positionScore));
-            const marker = new maplibregl.Marker({ element: markerEl })
-            .setLngLat([comp.longitude, comp.latitude])
-            .setPopup(new maplibregl.Popup().setHTML(`
-                <strong>${comp.name}</strong><br>
-                Pozycja: ${comp.position || 'N/A'}
-            `))
-            .addTo(map);
-        });
+        if (shouldAnimate) {
+            // Animowana wersja - markery pojawiają się jeden po drugim
+            sortedCompetitors.forEach((comp, index) => {
+                setTimeout(() => {
+                    const positionScore = comp.position_score ? parseFloat(comp.position_score) : 0;
+                    
+                    const markerEl = createCustomMarker(comp.position || 'N/A', getMarkerColor(positionScore));
+                    const marker = new maplibregl.Marker({ element: markerEl })
+                    .setLngLat([comp.longitude, comp.latitude])
+                    .setPopup(new maplibregl.Popup().setHTML(`
+                        <strong>${comp.name}</strong><br>
+                        Pozycja: ${comp.position || 'N/A'}
+                    `))
+                    .addTo(map);
+                }, index * 300); // 300ms przerwy między markerami
+            });
+        } else {
+            // Normalna wersja - wszystkie markery od razu
+            sortedCompetitors.forEach(comp => {
+                const positionScore = comp.position_score ? parseFloat(comp.position_score) : 0;
+                
+                const markerEl = createCustomMarker(comp.position || 'N/A', getMarkerColor(positionScore));
+                const marker = new maplibregl.Marker({ element: markerEl })
+                .setLngLat([comp.longitude, comp.latitude])
+                .setPopup(new maplibregl.Popup().setHTML(`
+                    <strong>${comp.name}</strong><br>
+                    Pozycja: ${comp.position || 'N/A'}
+                `))
+                .addTo(map);
+            });
+        }
 
         // Add main business marker last (so it appears on top) - 2x bigger
-        @if(isset($report->places_data) && isset($report->places_data['latitude']) && isset($report->places_data['longitude']))
-        const mainMarkerEl = createCustomMarker({{ $report->position ?? 'N/A' }}, getMarkerColor({{ $report->position_score }}), 60);
-        const mainMarker = new maplibregl.Marker({ element: mainMarkerEl })
-        .setLngLat([{{ $report->places_data['longitude'] }}, {{ $report->places_data['latitude'] }}])
-        .setPopup(new maplibregl.Popup().setHTML(`
-            <strong>{{ $report->business_name }}</strong><br>
-            Pozycja: {{ $report->position ?? 'N/A' }}<br>
-            Score: {{ number_format($report->position_score, 1) }}
-        `))
-        .addTo(map);
-        @elseif(isset($report->lead) && $report->lead->latitude && $report->lead->longitude)
-        const mainMarkerEl = createCustomMarker({{ $report->position ?? 'N/A' }}, getMarkerColor({{ $report->position_score }}), 60);
-        const mainMarker = new maplibregl.Marker({ element: mainMarkerEl })
-        .setLngLat([{{ $report->lead->longitude }}, {{ $report->lead->latitude }}])
-        .setPopup(new maplibregl.Popup().setHTML(`
-            <strong>{{ $report->business_name }}</strong><br>
-            Pozycja: {{ $report->position ?? 'N/A' }}<br>
-            Score: {{ number_format($report->position_score, 1) }}
-        `))
-        .addTo(map);
-        @endif
+        const addMainMarker = () => {
+            @if(isset($report->places_data) && isset($report->places_data['latitude']) && isset($report->places_data['longitude']))
+            const mainMarkerEl = createCustomMarker({{ $report->position ?? 'N/A' }}, getMarkerColor({{ $report->position_score }}), 60);
+            const mainMarker = new maplibregl.Marker({ element: mainMarkerEl })
+            .setLngLat([{{ $report->places_data['longitude'] }}, {{ $report->places_data['latitude'] }}])
+            .setPopup(new maplibregl.Popup().setHTML(`
+                <strong>{{ $report->business_name }}</strong><br>
+                Pozycja: {{ $report->position ?? 'N/A' }}<br>
+                Score: {{ number_format($report->position_score, 1) }}
+            `))
+            .addTo(map);
+            @elseif(isset($report->lead) && $report->lead->latitude && $report->lead->longitude)
+            const mainMarkerEl = createCustomMarker({{ $report->position ?? 'N/A' }}, getMarkerColor({{ $report->position_score }}), 60);
+            const mainMarker = new maplibregl.Marker({ element: mainMarkerEl })
+            .setLngLat([{{ $report->lead->longitude }}, {{ $report->lead->latitude }}])
+            .setPopup(new maplibregl.Popup().setHTML(`
+                <strong>{{ $report->business_name }}</strong><br>
+                Pozycja: {{ $report->position ?? 'N/A' }}<br>
+                Score: {{ number_format($report->position_score, 1) }}
+            `))
+            .addTo(map);
+            @endif
+        };
+        
+        // Dodaj główny marker z opóźnieniem jeśli animacja włączona
+        if (shouldAnimate) {
+            setTimeout(addMainMarker, sortedCompetitors.length * 300);
+        } else {
+            addMainMarker();
+        }
     </script>
 </body>
 </html>
