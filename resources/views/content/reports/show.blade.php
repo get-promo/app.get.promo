@@ -1148,19 +1148,21 @@
                 <div class="pillar-subtitle">{{ $pillar['description'] }}</div>
                 <div class="pillar-description">{{ $pillar['insight'] }}</div>
                 
+                @auth
                 @if(isset($pillar['breakdown']) && !empty($pillar['breakdown']))
                 <div class="pillar-breakdown">
                     <div class="breakdown-title">Składowe oceny:</div>
                     <div class="breakdown-items">
                         @foreach($pillar['breakdown'] as $key => $value)
                         <div class="breakdown-item">
-                            <span class="breakdown-key">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span>
+                            <span class="breakdown-key">{{ $key }}:</span>
                             <span class="breakdown-value">{{ $value }}</span>
                         </div>
                         @endforeach
                     </div>
                 </div>
                 @endif
+                @endauth
             </div>
         </div>
         @endforeach

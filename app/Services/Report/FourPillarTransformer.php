@@ -130,8 +130,8 @@ class FourPillarTransformer
             'color' => self::getColor($score),
             'insight' => self::getZaufanieInsight($score),
             'breakdown' => [
-                'opinions' => round($opinionsScore, 1) . ' (waga 70%)',
-                'owner_replies' => round($repliesScore, 1) . ' (waga 30%)',
+                'Opinie' => round($opinionsScore, 1) . ' (waga 70%)',
+                'Odpowiedzi właściciela' => round($repliesScore, 1) . ' (waga 30%)',
             ],
         ];
     }
@@ -157,16 +157,16 @@ class FourPillarTransformer
         if ($postsWeight === 0) {
             $score = ($photosScore * 0.67) + ($repliesScore * 0.33);
             $breakdown = [
-                'photos_recency' => round($photosScore, 1) . ' (waga 67%)',
-                'owner_replies' => round($repliesScore, 1) . ' (waga 33%)',
-                'posts_recency' => 'brak danych',
+                'Aktualność zdjęć' => round($photosScore, 1) . ' (waga 67%)',
+                'Odpowiedzi właściciela' => round($repliesScore, 1) . ' (waga 33%)',
+                'Aktualność postów' => 'brak danych',
             ];
         } else {
             $score = ($postsScore * 0.4) + ($photosScore * 0.4) + ($repliesScore * 0.2);
             $breakdown = [
-                'posts_recency' => round($postsScore, 1) . ' (waga 40%)',
-                'photos_recency' => round($photosScore, 1) . ' (waga 40%)',
-                'owner_replies' => round($repliesScore, 1) . ' (waga 20%)',
+                'Aktualność postów' => round($postsScore, 1) . ' (waga 40%)',
+                'Aktualność zdjęć' => round($photosScore, 1) . ' (waga 40%)',
+                'Odpowiedzi właściciela' => round($repliesScore, 1) . ' (waga 20%)',
             ];
         }
         
@@ -206,11 +206,11 @@ class FourPillarTransformer
             'color' => self::getColor($score),
             'insight' => self::getPrezentacjaInsight($score),
             'breakdown' => [
-                'photos_count' => round($photosCountScore, 1) . ' (waga 20%)',
-                'description_length' => round($descLengthScore, 1) . ' (waga 15%)',
-                'description_ai' => round($descAiScore, 1) . ' (waga 20%)',
-                'hours_url' => round($hoursUrlScore, 1) . ' (waga 25%)',
-                'category_fit' => round($categoryFitScore, 1) . ' (waga 20%)',
+                'Liczba zdjęć' => round($photosCountScore, 1) . ' (waga 20%)',
+                'Długość opisu' => round($descLengthScore, 1) . ' (waga 15%)',
+                'Jakość opisu (AI)' => round($descAiScore, 1) . ' (waga 20%)',
+                'Godziny otwarcia i URL' => round($hoursUrlScore, 1) . ' (waga 25%)',
+                'Dopasowanie kategorii' => round($categoryFitScore, 1) . ' (waga 20%)',
             ],
         ];
     }
@@ -221,11 +221,11 @@ class FourPillarTransformer
     private static function getStatus(float $score): string
     {
         if ($score < 3.0) {
-            return '❌ Wymaga pilnej poprawy';
+            return 'Wymaga pilnej poprawy';
         } elseif ($score < 4.0) {
-            return '⚠️ Częściowo zoptymalizowany';
+            return 'Częściowo zoptymalizowany';
         } else {
-            return '✅ Bardzo dobra kondycja';
+            return 'Bardzo dobra kondycja';
         }
     }
     
@@ -321,13 +321,13 @@ class FourPillarTransformer
         }
         
         if ($criticalCount >= 2) {
-            return '🔴 Profil wymaga pilnej interwencji';
+            return 'Profil wymaga pilnej interwencji';
         } elseif ($warningCount >= 3) {
-            return '🟠 Profil do wzmocnienia w kluczowych obszarach';
+            return 'Profil do wzmocnienia w kluczowych obszarach';
         } elseif ($goodCount >= 3) {
-            return '🟢 Profil w bardzo dobrej kondycji - gotowy do skalowania';
+            return 'Profil w bardzo dobrej kondycji - gotowy do skalowania';
         } else {
-            return '🟡 Profil częściowo zoptymalizowany';
+            return 'Profil częściowo zoptymalizowany';
         }
     }
 }

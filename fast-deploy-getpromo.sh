@@ -47,6 +47,16 @@ $PHP artisan migrate --force
 echo -e "${BLUE}🔄 Restarting queue worker...${NC}"
 $PHP artisan queue:restart
 
+# Kill any existing queue:work processes
+pkill -f "artisan queue:work" || echo "No existing queue workers to kill"
+
+# Ensure log file exists
+touch storage/logs/queue.log
+
+# Start new queue worker in background
+nohup $PHP artisan queue:work --tries=3 --timeout=900 > storage/logs/queue.log 2>&1 &
+echo "Queue worker started with PID: $!"
+
 # If using supervisor, restart it
 if command -v supervisorctl &> /dev/null; then
     supervisorctl restart laravel-worker:* 2>/dev/null || echo "Supervisor not configured or worker not running"
