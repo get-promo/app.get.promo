@@ -760,6 +760,45 @@
             color: #333;
         }
         
+        .pillar-breakdown {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .breakdown-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .breakdown-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            padding: 6px 0;
+        }
+        
+        .breakdown-key {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .breakdown-value {
+            color: #333;
+            font-weight: 700;
+        }
+        
         /* Pillar color variants */
         .pillar-good .pillar-box-score { background: #7fba00; }
         .pillar-good .pillar-status { color: #7fba00; }
@@ -941,11 +980,12 @@
             
             <div class="score-column-right">
                 <div class="quality-section">
-                    <div class="score-label">Jakość profilu</div>
+                    <div class="score-label">Średnia globalna</div>
                     @php
-                        $qualityColor = $report->profile_quality_score >= 4.0 ? '#7fba00' : ($report->profile_quality_score >= 3.0 ? '#ff8900' : '#bd3544');
+                        $globalScore = $publicData['global_score'] ?? 0;
+                        $globalColor = $globalScore >= 4.0 ? '#7fba00' : ($globalScore >= 3.0 ? '#ff8900' : '#bd3544');
                     @endphp
-                    <div class="score-value" style="color: {{ $qualityColor }};">{{ number_format($report->profile_quality_score, 1) }}</div>
+                    <div class="score-value" style="color: {{ $globalColor }};">{{ number_format($globalScore, 1) }}</div>
                 </div>
                 
                 <div class="pillars-section">
@@ -1107,6 +1147,20 @@
                 </div>
                 <div class="pillar-subtitle">{{ $pillar['description'] }}</div>
                 <div class="pillar-description">{{ $pillar['insight'] }}</div>
+                
+                @if(isset($pillar['breakdown']) && !empty($pillar['breakdown']))
+                <div class="pillar-breakdown">
+                    <div class="breakdown-title">Składowe oceny:</div>
+                    <div class="breakdown-items">
+                        @foreach($pillar['breakdown'] as $key => $value)
+                        <div class="breakdown-item">
+                            <span class="breakdown-key">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span>
+                            <span class="breakdown-value">{{ $value }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
         @endforeach

@@ -7,6 +7,7 @@ use App\Models\Report;
 use App\Models\ReportGenerationJob;
 use App\Jobs\GenerateReportJob;
 use App\Services\Report\ReportPublicTransformer;
+use App\Services\Report\FourPillarTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -93,10 +94,11 @@ class ReportController extends Controller
         
         $report->incrementViews();
         
-        // Transformuj dane techniczne na format PUBLIC
-        $publicData = ReportPublicTransformer::transform([
-            'query' => $report->search_query,
-            'components' => $report->score_breakdown,
+        // Transformuj dane techniczne na format PUBLIC - NOWY MODEL 4-FILAROWY
+        $publicData = FourPillarTransformer::transform([
+            'places_data' => $report->places_data,
+            'position_score' => $report->position_score,
+            'search_query' => $report->search_query,
         ]);
 
         return view('content.reports.show', compact('report', 'publicData'));
