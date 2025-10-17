@@ -290,12 +290,19 @@ class GooglePlacesService
     }
 
     /**
-     * Pobierz liczbę zdjęć z SerpApi (dokładniejsze niż Google Places API)
+     * Pobierz dane o zdjęciach z SerpApi (liczba + data ostatniego)
+     * 
+     * @return array ['count' => int|null, 'last_photo_epoch_days' => int|null]
      */
-    private function getPhotosCountFromSerpApi(?string $cid, ?string $dataId): ?int
+    private function getPhotosDataFromSerpApi(?string $cid, ?string $dataId): array
     {
+        $result = [
+            'count' => null,
+            'last_photo_epoch_days' => null,
+        ];
+
         if (!$cid && !$dataId) {
-            return null;
+            return $result;
         }
 
         // Przekonwertuj CID na data_id jeśli potrzeba
@@ -304,10 +311,10 @@ class GooglePlacesService
         }
 
         if (!$dataId) {
-            return null;
+            return $result;
         }
 
-        $cacheKey = "serpapi_photos_count_{$dataId}";
+        $cacheKey = "serpapi_photos_data_{$dataId}";
         
         if ($this->enableCache && Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
@@ -323,14 +330,42 @@ class GooglePlacesService
 
             if ($response->successful()) {
                 $data = $response->json();
-                $photosCount = isset($data['photos']) ? count($data['photos']) : 0;
-
-                if ($this->enableCache) {
-                    Cache::put($cacheKey, $photosCount, now()->addHours($this->cacheTtl));
+                $photos = $data['photos'] ?? [];
+                
+                $result['count'] = count($photos);
+                
+                // Znajdź najnowsze zdjęcie (z największym timestamp)
+                $latestTimestamp = null;
+                foreach ($photos as $photo) {
+                    // SerpApi może zwracać 'date' lub 'timestamp'
+                    $timestamp = null;
+                    
+                    if (isset($photo['date'])) {
+                        // Format daty może być np. "2 days ago", "1 week ago" lub rzeczywista data
+                        $timestamp = $this->parsePhotoDate($photo['date']);
+                    } elseif (isset($photo['timestamp'])) {
+                        $timestamp = $photo['timestamp'];
+                    }
+                    
+                    if ($timestamp && ($latestTimestamp === null || $timestamp > $latestTimestamp)) {
+                        $latestTimestamp = $timestamp;
+                    }
+                }
+                
+                // Oblicz ile dni minęło od ostatniego zdjęcia
+                if ($latestTimestamp) {
+                    $result['last_photo_epoch_days'] = (int) floor((time() - $latestTimestamp) / 86400);
                 }
 
-                Log::info("SerpApi Photos: {$photosCount} photos found for data_id={$dataId}");
-                return $photosCount;
+                if ($this->enableCache) {
+                    Cache::put($cacheKey, $result, now()->addHours($this->cacheTtl));
+                }
+
+                Log::info("SerpApi Photos: {$result['count']} photos found, last photo: " . 
+                    ($result['last_photo_epoch_days'] !== null ? "{$result['last_photo_epoch_days']} days ago" : "unknown") . 
+                    " for data_id={$dataId}");
+                    
+                return $result;
             } else {
                 Log::error("SerpApi Photos API failed: " . $response->body());
             }
@@ -339,6 +374,42 @@ class GooglePlacesService
             Log::error("SerpApi Photos API exception: " . $e->getMessage());
         }
 
+        return $result;
+    }
+    
+    /**
+     * Parsuj datę zdjęcia z SerpApi (obsługa różnych formatów)
+     */
+    private function parsePhotoDate(string $dateString): ?int
+    {
+        // Próba 1: Parsowanie względnych dat ("2 days ago", "1 week ago")
+        if (preg_match('/(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago/i', $dateString, $matches)) {
+            $amount = (int) $matches[1];
+            $unit = strtolower($matches[2]);
+            
+            $intervals = [
+                'second' => 1,
+                'minute' => 60,
+                'hour' => 3600,
+                'day' => 86400,
+                'week' => 604800,
+                'month' => 2592000, // ~30 dni
+                'year' => 31536000,
+            ];
+            
+            if (isset($intervals[$unit])) {
+                return time() - ($amount * $intervals[$unit]);
+            }
+        }
+        
+        // Próba 2: Standardowe formaty dat
+        try {
+            $date = new \DateTime($dateString);
+            return $date->getTimestamp();
+        } catch (\Exception $e) {
+            // Nie udało się sparsować
+        }
+        
         return null;
     }
 
@@ -469,12 +540,16 @@ class GooglePlacesService
             $data['owner_reply_rate_pct'] = $this->getOwnerReplyRateFromSerper($placeId);
         }
 
-        // Pobierz dokładną liczbę zdjęć z SerpApi (lepsze niż Google Places API)
+        // Pobierz dokładne dane o zdjęciach z SerpApi (liczba + data ostatniego)
         if ($dataId) {
-            $serpApiPhotosCount = $this->getPhotosCountFromSerpApi(null, $dataId);
-            if ($serpApiPhotosCount !== null) {
-                $data['photos_count'] = $serpApiPhotosCount;
-                Log::info("Using SerpApi photos count: {$serpApiPhotosCount}");
+            $photosData = $this->getPhotosDataFromSerpApi(null, $dataId);
+            if ($photosData['count'] !== null) {
+                $data['photos_count'] = $photosData['count'];
+                Log::info("Using SerpApi photos count: {$photosData['count']}");
+            }
+            if ($photosData['last_photo_epoch_days'] !== null) {
+                $data['last_photo_epoch_days'] = $photosData['last_photo_epoch_days'];
+                Log::info("Using SerpApi last photo date: {$photosData['last_photo_epoch_days']} days ago");
             }
             
             // Pobierz liczbę postów z ostatnich 30 dni
@@ -508,13 +583,7 @@ class GooglePlacesService
             $data['longitude'] = $result['location']['longitude'] ?? null;
         }
 
-        // Oblicz świeżość ostatniego zdjęcia (jeśli dostępne)
-        if (isset($result['photos']) && is_array($result['photos']) && count($result['photos']) > 0) {
-            // Nowe API nie ma bezpośrednio daty zdjęć w podstawowym response
-            // Można by było użyć authorAttributions[].uri do określenia świeżości
-            // Na razie zostawiamy null
-            $data['last_photo_epoch_days'] = null;
-        }
+        // Uwaga: last_photo_epoch_days jest już pobrane wyżej z SerpApi
 
         return $data;
     }
