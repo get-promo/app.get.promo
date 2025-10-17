@@ -512,6 +512,7 @@ $(function() {
 
     // Aktualizuj ukryte pole przy zmianach (dodawanie, usuwanie)
     tagify.on('add remove', function() {
+      hiddenInput.value = JSON.stringify(tagify.value);
     });
   }
 });
