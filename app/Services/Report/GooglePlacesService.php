@@ -291,6 +291,7 @@ class GooglePlacesService
 
     /**
      * Pobierz dane o zdjęciach z SerpApi (liczba + data ostatniego)
+     * Pobiera listę zdjęć, a następnie robi osobny request do photo_meta dla pierwszego (najnowszego)
      * 
      * @return array ['count' => int|null, 'last_photo_epoch_days' => int|null]
      */
@@ -321,6 +322,7 @@ class GooglePlacesService
         }
 
         try {
+            // Krok 1: Pobierz listę zdjęć
             $response = Http::timeout(30)->get('https://serpapi.com/search', [
                 'engine' => 'google_maps_photos',
                 'data_id' => $dataId,
@@ -328,47 +330,52 @@ class GooglePlacesService
                 'hl' => 'pl',
             ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $photos = $data['photos'] ?? [];
-                
-                $result['count'] = count($photos);
-                
-                // Znajdź najnowsze zdjęcie (z największym timestamp)
-                $latestTimestamp = null;
-                foreach ($photos as $photo) {
-                    // SerpApi może zwracać 'date' lub 'timestamp'
-                    $timestamp = null;
-                    
-                    if (isset($photo['date'])) {
-                        // Format daty może być np. "2 days ago", "1 week ago" lub rzeczywista data
-                        $timestamp = $this->parsePhotoDate($photo['date']);
-                    } elseif (isset($photo['timestamp'])) {
-                        $timestamp = $photo['timestamp'];
-                    }
-                    
-                    if ($timestamp && ($latestTimestamp === null || $timestamp > $latestTimestamp)) {
-                        $latestTimestamp = $timestamp;
-                    }
-                }
-                
-                // Oblicz ile dni minęło od ostatniego zdjęcia
-                if ($latestTimestamp) {
-                    $result['last_photo_epoch_days'] = (int) floor((time() - $latestTimestamp) / 86400);
-                }
-
-                if ($this->enableCache) {
-                    Cache::put($cacheKey, $result, now()->addHours($this->cacheTtl));
-                }
-
-                Log::info("SerpApi Photos: {$result['count']} photos found, last photo: " . 
-                    ($result['last_photo_epoch_days'] !== null ? "{$result['last_photo_epoch_days']} days ago" : "unknown") . 
-                    " for data_id={$dataId}");
-                    
-                return $result;
-            } else {
+            if (!$response->successful()) {
                 Log::error("SerpApi Photos API failed: " . $response->body());
+                return $result;
             }
+
+            $data = $response->json();
+            $photos = $data['photos'] ?? [];
+            
+            $result['count'] = count($photos);
+            
+            // Krok 2: Pobierz metadane pierwszego zdjęcia (zakładamy że photos są sortowane od najnowszych)
+            if (!empty($photos) && isset($photos[0])) {
+                $firstPhoto = $photos[0];
+                
+                // Wyciągnij photo data_id z URL lub z pola
+                $photoDataId = null;
+                if (isset($firstPhoto['photo_meta_serpapi_link'])) {
+                    // Wyciągnij data_id z linku
+                    if (preg_match('/data_id=([^&]+)/', $firstPhoto['photo_meta_serpapi_link'], $matches)) {
+                        $photoDataId = $matches[1];
+                    }
+                } elseif (isset($firstPhoto['image'])) {
+                    // Wyciągnij z URL zdjęcia (AF1QipXXX format)
+                    if (preg_match('/\/([A-Za-z0-9_-]{43,})=/', $firstPhoto['image'], $matches)) {
+                        $photoDataId = $matches[1];
+                    }
+                }
+                
+                if ($photoDataId) {
+                    $photoDate = $this->getPhotoMetaDate($photoDataId);
+                    if ($photoDate) {
+                        $result['last_photo_epoch_days'] = (int) floor((time() - $photoDate) / 86400);
+                        Log::info("SerpApi Photos: Last photo date: {$result['last_photo_epoch_days']} days ago");
+                    }
+                }
+            }
+
+            if ($this->enableCache) {
+                Cache::put($cacheKey, $result, now()->addHours($this->cacheTtl));
+            }
+
+            Log::info("SerpApi Photos: {$result['count']} photos found, last photo: " . 
+                ($result['last_photo_epoch_days'] !== null ? "{$result['last_photo_epoch_days']} days ago" : "unknown date") . 
+                " for data_id={$dataId}");
+                
+            return $result;
 
         } catch (\Exception $e) {
             Log::error("SerpApi Photos API exception: " . $e->getMessage());
@@ -378,11 +385,53 @@ class GooglePlacesService
     }
     
     /**
+     * Pobierz datę zdjęcia z photo_meta endpoint
+     */
+    private function getPhotoMetaDate(string $photoDataId): ?int
+    {
+        try {
+            $response = Http::timeout(15)->get('https://serpapi.com/search', [
+                'engine' => 'google_maps_photo_meta',
+                'data_id' => $photoDataId,
+                'api_key' => config('services.serpapi.api_key'),
+                'hl' => 'pl',
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                $dateString = $data['date'] ?? null;
+                
+                if ($dateString) {
+                    return $this->parsePhotoDate($dateString);
+                }
+            } else {
+                Log::warning("SerpApi Photo Meta failed for {$photoDataId}: " . $response->body());
+            }
+        } catch (\Exception $e) {
+            Log::warning("SerpApi Photo Meta exception for {$photoDataId}: " . $e->getMessage());
+        }
+        
+        return null;
+    }
+    
+    /**
      * Parsuj datę zdjęcia z SerpApi (obsługa różnych formatów)
      */
     private function parsePhotoDate(string $dateString): ?int
     {
-        // Próba 1: Parsowanie względnych dat ("2 days ago", "1 week ago")
+        // Format 1: DD-MM-YYYY (np. "29-4-2023")
+        if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $dateString, $matches)) {
+            try {
+                $date = \DateTime::createFromFormat('d-n-Y', $dateString);
+                if ($date) {
+                    return $date->getTimestamp();
+                }
+            } catch (\Exception $e) {
+                // Try next format
+            }
+        }
+        
+        // Format 2: Względne daty ("2 days ago", "1 week ago")
         if (preg_match('/(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago/i', $dateString, $matches)) {
             $amount = (int) $matches[1];
             $unit = strtolower($matches[2]);
@@ -402,12 +451,12 @@ class GooglePlacesService
             }
         }
         
-        // Próba 2: Standardowe formaty dat
+        // Format 3: Standardowe formaty dat (ISO, etc.)
         try {
             $date = new \DateTime($dateString);
             return $date->getTimestamp();
         } catch (\Exception $e) {
-            // Nie udało się sparsować
+            Log::warning("Could not parse photo date: {$dateString}");
         }
         
         return null;
