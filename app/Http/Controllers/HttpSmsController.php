@@ -78,6 +78,12 @@ class HttpSmsController extends Controller
             'status' => 'pending',
         ]);
 
+        // Wyślij FCM notification do aplikacji Android
+        $this->sendFcmNotification($device, 'new_message', [
+            'message_id' => $message->message_id,
+            'type' => 'outgoing'
+        ]);
+
         // Zwróć odpowiedź zgodną z API httpSMS
         return response()->json([
             'id' => $message->message_id,
@@ -87,6 +93,28 @@ class HttpSmsController extends Controller
             'status' => $message->status,
             'created_at' => $message->created_at->toISOString(),
         ], 202); // 202 Accepted - wiadomość została zaakceptowana do wysłania
+    }
+    
+    /**
+     * Wyślij FCM notification do aplikacji Android
+     */
+    private function sendFcmNotification($device, $type, $data = [])
+    {
+        $fcmToken = $device->device_info['fcm_token'] ?? null;
+        
+        if (!$fcmToken || $fcmToken === 'dummy_fcm_token') {
+            return; // Brak FCM token - skip
+        }
+        
+        // TODO: Tutaj należy zintegrować Firebase Cloud Messaging
+        // Na razie pomijamy - aplikacja może pollować ręcznie
+        
+        \Log::info('FCM notification would be sent', [
+            'device_id' => $device->device_id,
+            'fcm_token' => substr($fcmToken, 0, 20) . '...',
+            'type' => $type,
+            'data' => $data
+        ]);
     }
 
     /**
