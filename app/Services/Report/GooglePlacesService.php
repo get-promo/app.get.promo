@@ -414,10 +414,18 @@ class GooglePlacesService
                 
                 if ($dateString) {
                     $ts = $this->parsePhotoDate($dateString);
-                    if ($ts && $this->enableCache) {
-                        Cache::put($cacheKey, $ts, now()->addHours($this->cacheTtl));
+                    if ($ts) {
+                        // Dodaj +5 dni (moderacja Google), ale nie przesuwaj w przyszłość
+                        $adjusted = $ts + 5 * 86400;
+                        $now = time();
+                        if ($adjusted > $now) {
+                            $adjusted = $now;
+                        }
+                        if ($this->enableCache) {
+                            Cache::put($cacheKey, $adjusted, now()->addHours($this->cacheTtl));
+                        }
+                        return $adjusted;
                     }
-                    return $ts;
                 }
             } else {
                 Log::warning("SerpApi Photo Meta failed for {$photoDataId}: " . $response->body());
