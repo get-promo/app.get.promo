@@ -339,32 +339,35 @@ class GooglePlacesService
             $photos = $data['photos'] ?? [];
             
             $result['count'] = count($photos);
-            
-            // Krok 2: Pobierz metadane pierwszego zdjęcia (zakładamy że photos są sortowane od najnowszych)
-            if (!empty($photos) && isset($photos[0])) {
-                $firstPhoto = $photos[0];
-                
-                // Wyciągnij photo data_id z URL lub z pola
+
+            // Krok 2: Pobierz metadane dla pierwszych 20 zdjęć i wybierz najnowszą datę
+            $candidates = array_slice($photos, 0, 20);
+            $latestTs = null;
+            foreach ($candidates as $photo) {
                 $photoDataId = null;
-                if (isset($firstPhoto['photo_meta_serpapi_link'])) {
-                    // Wyciągnij data_id z linku
-                    if (preg_match('/data_id=([^&]+)/', $firstPhoto['photo_meta_serpapi_link'], $matches)) {
+                if (isset($photo['photo_meta_serpapi_link'])) {
+                    if (preg_match('/data_id=([^&]+)/', $photo['photo_meta_serpapi_link'], $matches)) {
                         $photoDataId = $matches[1];
                     }
-                } elseif (isset($firstPhoto['image'])) {
-                    // Wyciągnij z URL zdjęcia (AF1QipXXX format)
-                    if (preg_match('/\/([A-Za-z0-9_-]{43,})=/', $firstPhoto['image'], $matches)) {
+                } elseif (isset($photo['image'])) {
+                    if (preg_match('/\/([A-Za-z0-9_-]{43,})=/', $photo['image'], $matches)) {
                         $photoDataId = $matches[1];
                     }
                 }
-                
-                if ($photoDataId) {
-                    $photoDate = $this->getPhotoMetaDate($photoDataId);
-                    if ($photoDate) {
-                        $result['last_photo_epoch_days'] = (int) floor((time() - $photoDate) / 86400);
-                        Log::info("SerpApi Photos: Last photo date: {$result['last_photo_epoch_days']} days ago");
-                    }
+
+                if (!$photoDataId) {
+                    continue;
                 }
+
+                $photoDateTs = $this->getPhotoMetaDate($photoDataId);
+                if ($photoDateTs && ($latestTs === null || $photoDateTs > $latestTs)) {
+                    $latestTs = $photoDateTs;
+                }
+            }
+
+            if ($latestTs) {
+                $result['last_photo_epoch_days'] = (int) floor((time() - $latestTs) / 86400);
+                Log::info("SerpApi Photos: Latest photo across first 20 has age {$result['last_photo_epoch_days']} days");
             }
 
             if ($this->enableCache) {
@@ -390,6 +393,14 @@ class GooglePlacesService
     private function getPhotoMetaDate(string $photoDataId): ?int
     {
         try {
+            $cacheKey = "serpapi_photo_meta_{$photoDataId}";
+            if ($this->enableCache && Cache::has($cacheKey)) {
+                $cached = Cache::get($cacheKey);
+                if (is_int($cached)) {
+                    return $cached;
+                }
+            }
+
             $response = Http::timeout(15)->get('https://serpapi.com/search', [
                 'engine' => 'google_maps_photo_meta',
                 'data_id' => $photoDataId,
@@ -402,7 +413,11 @@ class GooglePlacesService
                 $dateString = $data['date'] ?? null;
                 
                 if ($dateString) {
-                    return $this->parsePhotoDate($dateString);
+                    $ts = $this->parsePhotoDate($dateString);
+                    if ($ts && $this->enableCache) {
+                        Cache::put($cacheKey, $ts, now()->addHours($this->cacheTtl));
+                    }
+                    return $ts;
                 }
             } else {
                 Log::warning("SerpApi Photo Meta failed for {$photoDataId}: " . $response->body());
