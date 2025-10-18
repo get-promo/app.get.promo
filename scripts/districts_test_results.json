@@ -1,0 +1,82 @@
+[
+  {
+    "position": 1,
+    "city": "Warszawa",
+    "population": "mazowieckie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 6,
+    "city": "Gdańsk",
+    "population": "pomorskie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 11,
+    "city": "Katowice",
+    "population": "śląskie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 16,
+    "city": "Rzeszów",
+    "population": "podkarpackie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 21,
+    "city": "Zabrze",
+    "population": "śląskie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 26,
+    "city": "Ruda Śląska",
+    "population": "śląskie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 31,
+    "city": "Dąbrowa Górnicza",
+    "population": "śląskie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 36,
+    "city": "Chorzów",
+    "population": "śląskie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 41,
+    "city": "Jaworzno",
+    "population": "śląskie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  },
+  {
+    "position": 46,
+    "city": "Siedlce",
+    "population": "mazowieckie",
+    "districts_count": 0,
+    "result": "BRAK",
+    "districts": []
+  }
+]
