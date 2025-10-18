@@ -4,9 +4,9 @@
 """
 Skrypt do pobierania danych z Serper API.
 - Wczytuje frazy z phrases.txt
-- Wczytuje kombinacje miasto-dzielnica z city_districts.csv
+- Wczytuje kombinacje miasto-dzielnica z cities.csv
 - Dla każdej kombinacji pyta Serper dopóki wyników == 10 (bez limitu stron)
-- Wykorzystuje wielowątkowość (16 wątków) i system checkpointów
+- Wykorzystuje wielowątkowość (8 wątków) i system checkpointów
 """
 
 import os
@@ -53,7 +53,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 ENV_PATH = os.path.join(PROJECT_ROOT, '.env')
 PHRASES_PATH = os.path.join(SCRIPT_DIR, 'phrases.txt')
-CITY_DISTRICTS_PATH = os.path.join(SCRIPT_DIR, 'city_districts.csv')
+CITIES_PATH = os.path.join(SCRIPT_DIR, 'cities.csv')
 PROGRESS_PATH = os.path.join(SCRIPT_DIR, 'progress.json')
 
 # Wczytanie konfiguracji z .env
@@ -136,14 +136,14 @@ def load_phrases():
         raise
 
 
-def load_city_districts():
+def load_cities():
     """
-    Wczytuje kombinacje miasto-dzielnica z city_districts.csv.
+    Wczytuje kombinacje miasto-dzielnica z cities.csv.
     Format: Miasto Dzielnica,Populacja
     """
     try:
         locations = []
-        with open(CITY_DISTRICTS_PATH, 'r', encoding='utf-8') as f:
+        with open(CITIES_PATH, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
                 # Pomiń komentarze i puste linie
@@ -482,7 +482,7 @@ def main():
     
     # Wczytanie danych
     phrases = load_phrases()
-    locations = load_city_districts()
+    locations = load_cities()
     progress = load_progress()
     
     total_combinations = len(phrases) * len(locations)
