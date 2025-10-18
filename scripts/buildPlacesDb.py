@@ -440,7 +440,7 @@ def process_combination(phrase, location_data, progress):
             
             # Przejdź do następnej strony
             page += 1
-            time.sleep(0.5)  # Krótka przerwa między stronami
+            time.sleep(0.3)  # Przerwa między stronami (rate limiting: 50 qps limit)
         
         # Aktualizacja globalnych statystyk
         with stats_lock:
@@ -493,7 +493,7 @@ def main():
     logger.info(f"Całkowita liczba kombinacji: {total_combinations}")
     logger.info(f"Ukończone kombinacje: {completed_combinations}")
     logger.info(f"Pozostałe kombinacje: {total_combinations - completed_combinations}")
-    logger.info(f"Liczba wątków: 16")
+    logger.info(f"Liczba wątków: 8")
     logger.info("=" * 80)
     
     # Przygotowanie listy zadań
@@ -507,7 +507,7 @@ def main():
     logger.info(f"Do przetworzenia: {len(tasks)} kombinacji")
     
     # Przetwarzanie z wykorzystaniem ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=16) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         futures = {
             executor.submit(process_combination, phrase, location_data, progress): (phrase, location_data)
             for phrase, location_data in tasks
