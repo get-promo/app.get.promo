@@ -1,0 +1,59 @@
+2025-10-18 16:59:15,493 [INFO] 
+
+2025-10-18 16:59:15,494 [INFO] ************************************************************
+2025-10-18 16:59:15,494 [INFO] URUCHAMIANIE TESTÓW SKRYPTU SCRAPER
+2025-10-18 16:59:15,494 [INFO] ************************************************************
+2025-10-18 16:59:15,494 [INFO] ============================================================
+2025-10-18 16:59:15,494 [INFO] TEST 1: Konfiguracja
+2025-10-18 16:59:15,494 [INFO] ============================================================
+2025-10-18 16:59:15,494 [INFO] ✓ SERPER_API_KEY znaleziony
+2025-10-18 16:59:15,953 [INFO] ✓ Połączenie z bazą danych OK (rekordów w places: 0)
+2025-10-18 16:59:15,954 [INFO] 
+============================================================
+2025-10-18 16:59:15,954 [INFO] TEST 2: Wczytywanie danych
+2025-10-18 16:59:15,955 [INFO] ============================================================
+2025-10-18 16:59:15,960 [INFO] Wczytano 72 fraz
+2025-10-18 16:59:15,960 [INFO] ✓ Wczytano 72 fraz
+2025-10-18 16:59:15,960 [INFO]   Przykładowe frazy: pomoc drogowa, usługi koparką, stolarz
+2025-10-18 16:59:15,968 [INFO] Wczytano 217 miast
+2025-10-18 16:59:15,969 [INFO] ✓ Wczytano 217 miast
+2025-10-18 16:59:15,969 [INFO]   Przykładowe miasta: Warszawa, Kraków, Łódź
+2025-10-18 16:59:15,969 [INFO] 
+============================================================
+2025-10-18 16:59:15,969 [INFO] TEST 4: Czyszczenie danych
+2025-10-18 16:59:15,969 [INFO] ============================================================
+2025-10-18 16:59:15,972 [WARNING] ⚠ 'Test 😀 emoji' → 'Test emoji' (oczekiwano: 'Test  emoji')
+2025-10-18 16:59:15,972 [INFO] ✓ 'Multiple   spaces' → 'Multiple spaces'
+2025-10-18 16:59:15,972 [INFO] ✓ 'Special!@#$chars' → 'Specialchars'
+2025-10-18 16:59:15,972 [INFO] ✓ 'Normal text' → 'Normal text'
+2025-10-18 16:59:15,973 [INFO] 
+============================================================
+2025-10-18 16:59:15,973 [INFO] TEST 3: Zapytanie Serper API
+2025-10-18 16:59:15,973 [INFO] ============================================================
+2025-10-18 16:59:15,973 [INFO] Zapytanie: 'pomoc drogowa Warszawa'
+2025-10-18 16:59:17,049 [INFO] ✓ Otrzymano 10 miejsc
+2025-10-18 16:59:17,049 [INFO]   Pierwsze miejsce: Pomoc Drogowa Warszawa
+2025-10-18 16:59:17,050 [INFO]   CID: 1032716957174922477
+2025-10-18 16:59:17,051 [INFO]   Adres: Śmiała 1/3, 01-523 Warszawa
+2025-10-18 16:59:17,051 [INFO] 
+============================================================
+2025-10-18 16:59:17,051 [INFO] TEST 5: Operacje na bazie danych
+2025-10-18 16:59:17,051 [INFO] ============================================================
+2025-10-18 16:59:17,451 [INFO] ✓ Przetworzono dane miejsca: Pomoc Drogowa Warszawa
+2025-10-18 16:59:17,527 [INFO]   Miejsce nie istnieje w bazie
+2025-10-18 16:59:17,700 [INFO] ✓ Dodano miejsce do bazy danych
+2025-10-18 16:59:17,779 [INFO] ✓ Weryfikacja: miejsce zostało zapisane w bazie
+2025-10-18 16:59:17,779 [INFO]   ID: 1
+2025-10-18 16:59:17,779 [INFO]   Title: Pomoc Drogowa Warszawa
+2025-10-18 16:59:17,780 [INFO]   Search phrase: pomoc drogowa
+2025-10-18 16:59:17,780 [INFO]   City: Warszawa
+2025-10-18 16:59:17,780 [INFO] 
+============================================================
+2025-10-18 16:59:17,780 [INFO] PODSUMOWANIE TESTÓW
+2025-10-18 16:59:17,780 [INFO] ============================================================
+2025-10-18 16:59:17,781 [INFO] ✓ Wszystkie testy zakończone pomyślnie!
+2025-10-18 16:59:17,781 [INFO] ✓ Skrypt jest gotowy do uruchomienia na pełnych danych
+2025-10-18 16:59:17,781 [INFO] 
+Aby uruchomić pełny scraper:
+2025-10-18 16:59:17,781 [INFO]   python3 scripts/buildPlacesDb.py
+2025-10-18 16:59:17,781 [INFO] ============================================================
