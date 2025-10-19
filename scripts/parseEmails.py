@@ -3,9 +3,14 @@
 
 """
 Skrypt do wyszukiwania emaili ze stron internetowych dla rekordów w tabeli places.
-- Wielowątkowość (8 wątków)
+- Wielowątkowość (16 wątków)
 - System checkpointów
-- Logika z parseEmails.php: strona główna → strony kontaktowe
+- Ulepszona logika z unifiedParser.php:
+  - Sprawdzanie mailto: w polu website
+  - Dedykowana obsługa Facebook (mbasic + cookies)
+  - Pomijanie Instagram
+  - Wyszukiwanie mailto: w linkach HTML
+  - Strona główna → strony kontaktowe
 """
 
 import os
