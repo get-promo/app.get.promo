@@ -105,7 +105,13 @@ now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 for record in old_records:
     try:
-        cid = (record.get('cid') or '').strip()
+        # Bezpieczne pobranie CID
+        cid_raw = record.get('cid')
+        if cid_raw is None:
+            stats['skipped_no_cid'] += 1
+            continue
+        
+        cid = str(cid_raw).strip()
         
         # Pomiń rekordy bez CID
         if not cid:
@@ -115,7 +121,8 @@ for record in old_records:
         # Sprawdź czy CID już istnieje
         if cid in existing_cids:
             # Opcjonalnie: zaktualizuj email jeśli go nie ma
-            email = (record.get('email') or '').strip()
+            email_raw = record.get('email')
+            email = str(email_raw).strip() if email_raw else ''
             if email:
                 cursor.execute("""
                     UPDATE places 
