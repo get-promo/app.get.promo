@@ -3,8 +3,8 @@
 
 """
 Skrypt do wyszukiwania emaili ze stron internetowych dla rekordów w tabeli places.
-- Wielowątkowość (16 wątków)
-- System checkpointów
+- Wielowątkowość (4 wątki - stabilne)
+- BEZ checkpointów (SQL chroni przed duplikatami)
 - Ulepszona logika z unifiedParser.php:
   - Sprawdzanie mailto: w polu website
   - Dedykowana obsługa Facebook (mbasic + cookies)
@@ -54,9 +54,9 @@ stats = {
     'errors': 0
 }
 
-# Lock dla checkpointów i progress
-checkpoint_lock = Lock()
-progress_lock = Lock()
+# Lock dla checkpointów (wyłączone - SQL chroni przed duplikatami)
+# checkpoint_lock = Lock()
+# progress_lock = Lock()
 
 # Ścieżki do plików
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -74,8 +74,8 @@ DB_USERNAME = os.getenv('DB_USERNAME', 'root')
 DB_PASSWORD = os.getenv('DB_PASSWORD', '')
 
 # Parametry
-REQUEST_TIMEOUT = 10
-MAX_WORKERS = 16
+REQUEST_TIMEOUT = 5
+MAX_WORKERS = 4
 
 
 def get_db_connection():
@@ -241,17 +241,13 @@ def get_email_from_facebook(url):
         return None
 
 
-def process_place(place_record, progress):
+def process_place(place_record):
     """
     Przetwarza jedno miejsce - szuka emaila na stronie.
+    Bez progress - SQL filtruje duplikaty.
     """
     place_id = place_record['id']
     website = place_record['website']
-    
-    # Sprawdź czy już przetworzony (thread-safe)
-    with progress_lock:
-        if progress.get(str(place_id), {}).get('completed'):
-            return
     
     logger.info(f"[{place_id}] Przetwarzam: {website}")
     
@@ -278,10 +274,6 @@ def process_place(place_record, progress):
             with stats_lock:
                 stats['processed'] += 1
                 stats['not_found'] += 1
-            
-            with progress_lock:
-                progress[str(place_id)] = {'completed': True, 'result': 'instagram'}
-                save_progress(progress)
             return
         
         # 3. Sprawdź czy to Facebook - użyj dedykowanej logiki
@@ -302,10 +294,6 @@ def process_place(place_record, progress):
                 with stats_lock:
                     stats['processed'] += 1
                     stats['errors'] += 1
-                
-                with progress_lock:
-                    progress[str(place_id)] = {'completed': True, 'result': 'fetch_error'}
-                    save_progress(progress)
                 return
             
             # Szukaj emaili na stronie głównej
@@ -370,14 +358,6 @@ def process_place(place_record, progress):
         with stats_lock:
             stats['processed'] += 1
         
-        with progress_lock:
-            progress[str(place_id)] = {
-                'completed': True,
-                'result': 'email_found' if email else 'not_found',
-                'email': email
-            }
-            save_progress(progress)
-        
     except Exception as e:
         logger.error(f"[{place_id}] Błąd: {e}")
         
@@ -391,10 +371,6 @@ def process_place(place_record, progress):
         with stats_lock:
             stats['processed'] += 1
             stats['errors'] += 1
-        
-        with progress_lock:
-            progress[str(place_id)] = {'completed': True, 'result': 'error'}
-            save_progress(progress)
         
     finally:
         if connection:
@@ -432,9 +408,6 @@ def main():
     
     start_time = time.time()
     
-    # Wczytaj postęp
-    progress = load_progress()
-    
     # Połącz z bazą i pobierz rekordy do przetworzenia
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -454,19 +427,14 @@ def main():
     connection.close()
     
     logger.info(f"Znaleziono {len(places)} miejsc do przetworzenia")
-    
-    # Filtruj już przetworzone
-    tasks = [p for p in places if not progress.get(str(p['id']), {}).get('completed')]
-    
-    logger.info(f"Do przetworzenia (po pominiętych): {len(tasks)} miejsc")
     logger.info(f"Liczba wątków: {MAX_WORKERS}")
     logger.info("=" * 80)
     
-    # Przetwarzanie wielowątkowe
+    # Przetwarzanie wielowątkowe (bez progress - SQL chroni przed duplikatami)
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {
-            executor.submit(process_place, place, progress): place
-            for place in tasks
+            executor.submit(process_place, place): place
+            for place in places
         }
         
         for future in as_completed(futures):
