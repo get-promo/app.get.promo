@@ -54,8 +54,9 @@ stats = {
     'errors': 0
 }
 
-# Lock dla checkpointów
+# Lock dla checkpointów i progress
 checkpoint_lock = Lock()
+progress_lock = Lock()
 
 # Ścieżki do plików
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -277,8 +278,9 @@ def process_place(place_record, progress):
                 stats['processed'] += 1
                 stats['not_found'] += 1
             
-            progress[str(place_id)] = {'completed': True, 'result': 'instagram'}
-            save_progress(progress)
+            with progress_lock:
+                progress[str(place_id)] = {'completed': True, 'result': 'instagram'}
+                save_progress(progress)
             return
         
         # 3. Sprawdź czy to Facebook - użyj dedykowanej logiki
@@ -300,8 +302,9 @@ def process_place(place_record, progress):
                     stats['processed'] += 1
                     stats['errors'] += 1
                 
-                progress[str(place_id)] = {'completed': True, 'result': 'fetch_error'}
-                save_progress(progress)
+                with progress_lock:
+                    progress[str(place_id)] = {'completed': True, 'result': 'fetch_error'}
+                    save_progress(progress)
                 return
             
             # Szukaj emaili na stronie głównej
@@ -366,12 +369,13 @@ def process_place(place_record, progress):
         with stats_lock:
             stats['processed'] += 1
         
-        progress[str(place_id)] = {
-            'completed': True,
-            'result': 'email_found' if email else 'not_found',
-            'email': email
-        }
-        save_progress(progress)
+        with progress_lock:
+            progress[str(place_id)] = {
+                'completed': True,
+                'result': 'email_found' if email else 'not_found',
+                'email': email
+            }
+            save_progress(progress)
         
     except Exception as e:
         logger.error(f"[{place_id}] Błąd: {e}")
@@ -387,8 +391,9 @@ def process_place(place_record, progress):
             stats['processed'] += 1
             stats['errors'] += 1
         
-        progress[str(place_id)] = {'completed': True, 'result': 'error'}
-        save_progress(progress)
+        with progress_lock:
+            progress[str(place_id)] = {'completed': True, 'result': 'error'}
+            save_progress(progress)
         
     finally:
         if connection:
@@ -410,8 +415,10 @@ def save_progress(progress):
     """Zapisuje postęp do pliku JSON."""
     with checkpoint_lock:
         try:
+            # Zrób kopię słownika żeby uniknąć "dictionary changed size during iteration"
+            progress_copy = dict(progress)
             with open(PROGRESS_PATH, 'w', encoding='utf-8') as f:
-                json.dump(progress, f, ensure_ascii=False, indent=2)
+                json.dump(progress_copy, f, ensure_ascii=False, indent=2)
         except Exception as e:
             logger.error(f"Błąd zapisywania postępu: {e}")
 
