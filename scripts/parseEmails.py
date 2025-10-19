@@ -248,9 +248,10 @@ def process_place(place_record, progress):
     place_id = place_record['id']
     website = place_record['website']
     
-    # Sprawdź czy już przetworzony
-    if progress.get(str(place_id), {}).get('completed'):
-        return
+    # Sprawdź czy już przetworzony (thread-safe)
+    with progress_lock:
+        if progress.get(str(place_id), {}).get('completed'):
+            return
     
     logger.info(f"[{place_id}] Przetwarzam: {website}")
     
@@ -412,15 +413,15 @@ def load_progress():
 
 
 def save_progress(progress):
-    """Zapisuje postęp do pliku JSON."""
-    with checkpoint_lock:
-        try:
-            # Zrób kopię słownika żeby uniknąć "dictionary changed size during iteration"
-            progress_copy = dict(progress)
-            with open(PROGRESS_PATH, 'w', encoding='utf-8') as f:
-                json.dump(progress_copy, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            logger.error(f"Błąd zapisywania postępu: {e}")
+    """Zapisuje postęp do pliku JSON (thread-safe)."""
+    # Uwaga: ta funkcja jest wywoływana wewnątrz progress_lock, więc nie dodajemy tutaj locka
+    try:
+        # Zrób kopię słownika żeby uniknąć "dictionary changed size during iteration"
+        progress_copy = dict(progress)
+        with open(PROGRESS_PATH, 'w', encoding='utf-8') as f:
+            json.dump(progress_copy, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"Błąd zapisywania postępu: {e}")
 
 
 def main():
@@ -445,6 +446,7 @@ def main():
           AND website IS NOT NULL 
           AND website != ''
           AND (email_checked = 0 OR email_checked IS NULL)
+          AND email_checked_at IS NULL
         ORDER BY id ASC
     """)
     
