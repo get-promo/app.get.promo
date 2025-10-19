@@ -106,6 +106,10 @@ def find_emails(html):
     if not html:
         return []
     
+    # LIMIT HTML do 100KB żeby uniknąć regex hang!
+    if len(html) > 100000:
+        html = html[:100000]
+    
     emails = []
     file_extensions = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp', '.bmp']
     
@@ -144,6 +148,10 @@ def find_contact_links(html, base_url):
     """
     if not html:
         return []
+    
+    # LIMIT HTML do 100KB
+    if len(html) > 100000:
+        html = html[:100000]
     
     contact_links = []
     
