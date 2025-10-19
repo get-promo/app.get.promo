@@ -126,66 +126,45 @@ def find_emails(html):
             if len(email) > 5 and '.' in email.split('@')[1]:
                 emails.append(email.lower())
     
-    # 2. Szukaj linków mailto: w HTML
-    try:
-        soup = BeautifulSoup(html, 'html.parser')
-        mailto_links = soup.find_all('a', href=re.compile(r'^mailto:', re.I))
-        
-        for link in mailto_links:
-            href = link.get('href', '')
-            if href.lower().startswith('mailto:'):
-                # Wyciągnij email z mailto:
-                email = href[7:]  # Usuń "mailto:"
-                email = email.split('?')[0]  # Usuń parametry (np. ?subject=)
-                email = email.strip()
-                
-                if '@' in email and len(email) > 5:
-                    emails.append(email.lower())
-    except:
-        pass
+    # 2. Szukaj linków mailto: w HTML (regex zamiast BeautifulSoup - szybsze)
+    mailto_pattern = r'mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+    mailto_matches = re.findall(mailto_pattern, html, re.IGNORECASE)
+    
+    for email in mailto_matches:
+        email = email.split('?')[0].strip().lower()
+        if '@' in email and len(email) > 5:
+            emails.append(email)
     
     return list(set(emails))  # Unikalne
 
 
 def find_contact_links(html, base_url):
     """
-    Znajduje linki do stron kontaktowych i mailto:.
-    Zwraca zarówno URLe stron jak i mailto: linki.
+    Znajduje linki do stron kontaktowych i mailto: (regex - bez BeautifulSoup).
     """
     if not html:
         return []
     
-    try:
-        soup = BeautifulSoup(html, 'html.parser')
-        links = soup.find_all('a', href=True)
-        contact_links = []
-        
-        for link in links:
-            href = link.get('href', '').strip()
-            text = link.get_text().lower().strip()
-            
-            # 1. Dodaj wszystkie linki mailto: bezpośrednio
-            if href.lower().startswith('mailto:'):
-                contact_links.append(href)
-                continue
-            
-            # 2. Pomiń linki telefoniczne
-            if href.lower().startswith('tel:'):
-                continue
-            
-            # 3. Sprawdź czy link/tekst zawiera "kontakt" lub "contact"
-            if ('kontakt' in href.lower() or 'contact' in href.lower() or
-                'kontakt' in text or 'contact' in text):
-                
-                # Konwertuj na absolutny URL
-                absolute_url = urljoin(base_url, href)
-                contact_links.append(absolute_url)
-        
-        return list(set(contact_links))[:5]  # Max 5 linków (mailto: + strony)
+    contact_links = []
     
-    except Exception as e:
-        logger.debug(f"Błąd parsowania linków: {e}")
-        return []
+    # 1. Znajdź wszystkie mailto: linki
+    mailto_pattern = r'href=["\']?(mailto:[^"\'>\s]+)'
+    mailto_matches = re.findall(mailto_pattern, html, re.IGNORECASE)
+    contact_links.extend(mailto_matches)
+    
+    # 2. Znajdź linki z "kontakt" lub "contact"
+    # Pattern: href="url" lub href='url' gdzie url zawiera kontakt/contact
+    link_pattern = r'href=["\']([^"\']*(?:kontakt|contact)[^"\']*)["\']'
+    link_matches = re.findall(link_pattern, html, re.IGNORECASE)
+    
+    for href in link_matches:
+        if href.startswith('tel:'):
+            continue
+        # Konwertuj na absolutny URL
+        absolute_url = urljoin(base_url, href)
+        contact_links.append(absolute_url)
+    
+    return list(set(contact_links))[:5]
 
 
 def get_website_content(url):
