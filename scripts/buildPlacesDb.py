@@ -361,7 +361,7 @@ def process_place(place, search_phrase, location, population):
         'price_level': clean_string(place.get('priceLevel', '')),
         'category': clean_string(place.get('category', '')),
         'phone_number': clean_string(place.get('phoneNumber', '')),
-        'website': clean_string(place.get('website', '')),
+        'website': place.get('website', ''),  # NIE używaj clean_string - psuje URL!
         'serper_response': json.dumps(place, ensure_ascii=False),
         'search_phrase': search_phrase,
         'city_name': location,  # "Warszawa Mokotów"
