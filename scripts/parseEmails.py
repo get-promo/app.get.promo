@@ -75,7 +75,7 @@ DB_PASSWORD = os.getenv('DB_PASSWORD', '')
 
 # Parametry
 REQUEST_TIMEOUT = 5
-MAX_WORKERS = 4
+MAX_WORKERS = 16
 
 
 def get_db_connection():
