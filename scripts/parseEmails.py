@@ -97,82 +97,112 @@ def get_db_connection():
         raise
 
 
+def _extract_mailto_emails(html: str):
+    """Wyciąga emaile z linków mailto: bez użycia regexów (odporne na HTML)."""
+    if not html:
+        return []
+    emails = []
+    i = 0
+    lower_html = html.lower()
+    while True:
+        idx = lower_html.find('mailto:', i)
+        if idx == -1:
+            break
+        start = idx + len('mailto:')
+        end = len(html)
+        for delim in ('"', "'", '>', ' ', '\\n', '\\r', '\\t'):
+            pos = html.find(delim, start)
+            if pos != -1:
+                end = min(end, pos)
+        raw = html[start:end]
+        email = raw.split('?')[0].strip()
+        if '@' in email and len(email) > 5:
+            emails.append(email.lower())
+        i = start
+    return list(set(emails))
+
+
+def _generate_email_windows(html: str, radius: int = 200, max_windows: int = 2000):
+    """Zwraca listę wycinków HTML wokół znaku '@' (±radius),
+    żeby uniknąć kosztownych regexów na dużym HTML."""
+    if not html:
+        return []
+    windows = []
+    lower_html = html.lower()
+    start = 0
+    while True:
+        idx = lower_html.find('@', start)
+        if idx == -1:
+            break
+        s = max(0, idx - radius)
+        e = min(len(html), idx + radius)
+        windows.append(html[s:e])
+        start = idx + 1
+        if len(windows) >= max_windows:
+            break
+    return windows
+
+
 def find_emails(html):
     """
-    Wyszukuje adresy email w HTML.
-    Filtruje rozszerzenia plików graficznych.
-    Szuka też linków mailto:
+    Wyszukuje adresy email w HTML bez pełnotekstowego regexu na dużym HTML:
+    - mailto: wyciągane ręcznie (bez regexów)
+    - reszta: regex stosowany tylko na małych oknach wokół '@'
     """
     if not html:
         return []
-    
-    # LIMIT HTML do 100KB żeby uniknąć regex hang!
-    if len(html) > 100000:
-        html = html[:100000]
-    
-    emails = []
+
     file_extensions = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp', '.bmp']
-    
-    # 1. Regex dla emaili w tekście
-    pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-    matches = re.findall(pattern, html)
-    
-    for email in matches:
-        # Dekoduj URL-encoded
-        from urllib.parse import unquote
-        email = unquote(email)
-        
-        # Sprawdź czy nie kończy się rozszerzeniem graficznym
-        is_file = any(email.lower().endswith(ext) for ext in file_extensions)
-        
-        if not is_file and '@' in email:
-            # Walidacja podstawowa
-            if len(email) > 5 and '.' in email.split('@')[1]:
-                emails.append(email.lower())
-    
-    # 2. Szukaj linków mailto: w HTML (regex zamiast BeautifulSoup - szybsze)
-    mailto_pattern = r'mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
-    mailto_matches = re.findall(mailto_pattern, html, re.IGNORECASE)
-    
-    for email in mailto_matches:
-        email = email.split('?')[0].strip().lower()
-        if '@' in email and len(email) > 5:
-            emails.append(email)
-    
-    return list(set(emails))  # Unikalne
+    found_emails = set()
+
+    # 1) Najpierw mailto:
+    for email in _extract_mailto_emails(html):
+        if not any(email.endswith(ext) for ext in file_extensions):
+            found_emails.add(email)
+
+    # 2) Następnie okna wokół '@' i dopiero wtedy regex
+    email_pattern = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}')
+    for chunk in _generate_email_windows(html):
+        for email in email_pattern.findall(chunk):
+            from urllib.parse import unquote
+            email = unquote(email).lower()
+            if '@' in email and len(email) > 5 and '.' in email.split('@')[1]:
+                if not any(email.endswith(ext) for ext in file_extensions):
+                    found_emails.add(email)
+
+    return list(found_emails)
 
 
 def find_contact_links(html, base_url):
     """
-    Znajduje linki do stron kontaktowych i mailto: (regex - bez BeautifulSoup).
+    Znajduje linki do stron kontaktowych i mailto:.
+    - mailto: parsowane ręcznie (bez regexów)
+    - kontakt/contact: proste dopasowanie regexem do href (niewielkie ryzyko)
     """
     if not html:
         return []
-    
-    # LIMIT HTML do 100KB
-    if len(html) > 100000:
-        html = html[:100000]
-    
+
     contact_links = []
-    
-    # 1. Znajdź wszystkie mailto: linki
-    mailto_pattern = r'href=["\']?(mailto:[^"\'>\s]+)'
-    mailto_matches = re.findall(mailto_pattern, html, re.IGNORECASE)
-    contact_links.extend(mailto_matches)
-    
-    # 2. Znajdź linki z "kontakt" lub "contact"
-    # Pattern: href="url" lub href='url' gdzie url zawiera kontakt/contact
+
+    # 1) mailto: → ręcznie, a jako link zwracamy pełny mailto:
+    for email in _extract_mailto_emails(html):
+        contact_links.append(f"mailto:{email}")
+
+    # 2) Linki zawierające kontakt/contact
     link_pattern = r'href=["\']([^"\']*(?:kontakt|contact)[^"\']*)["\']'
-    link_matches = re.findall(link_pattern, html, re.IGNORECASE)
-    
+    try:
+        link_matches = re.findall(link_pattern, html, re.IGNORECASE)
+    except Exception:
+        link_matches = []
+
     for href in link_matches:
         if href.startswith('tel:'):
             continue
-        # Konwertuj na absolutny URL
         absolute_url = urljoin(base_url, href)
         contact_links.append(absolute_url)
-    
-    return list(set(contact_links))[:5]
+
+    # Zwróć do 5 unikalnych
+    return list(dict.fromkeys(contact_links))[:5]
 
 
 def get_website_content(url):
