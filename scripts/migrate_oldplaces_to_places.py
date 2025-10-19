@@ -105,7 +105,7 @@ now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 for record in old_records:
     try:
-        cid = record.get('cid', '').strip()
+        cid = (record.get('cid') or '').strip()
         
         # Pomiń rekordy bez CID
         if not cid:
@@ -115,7 +115,7 @@ for record in old_records:
         # Sprawdź czy CID już istnieje
         if cid in existing_cids:
             # Opcjonalnie: zaktualizuj email jeśli go nie ma
-            email = record.get('email', '').strip()
+            email = (record.get('email') or '').strip()
             if email:
                 cursor.execute("""
                     UPDATE places 
@@ -144,16 +144,16 @@ for record in old_records:
         
         cursor.execute(insert_sql, (
             cid,
-            record.get('name', ''),
-            record.get('address', ''),
-            record.get('lat', 0),
-            record.get('lng', 0),
+            record.get('name') or '',
+            record.get('address') or '',
+            record.get('lat') or 0,
+            record.get('lng') or 0,
             record.get('rating'),
             record.get('rating_count'),
-            record.get('category', ''),
-            record.get('phone', ''),
-            record.get('website', ''),
-            record.get('email'),
+            record.get('category') or '',
+            record.get('phone') or '',
+            record.get('website') or '',
+            record.get('email') or None,
             bool(record.get('mail_checked', 0)),
             'oldplaces_migration',
             record.get('date_added') or now,
