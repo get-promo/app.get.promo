@@ -16,12 +16,18 @@ import re
 import logging
 import requests
 import pymysql
+import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 from datetime import datetime
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
+
+# Wyłącz ostrzeżenia SSL
+warnings.filterwarnings('ignore', message='Unverified HTTPS request')
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Konfiguracja logowania
 logging.basicConfig(
@@ -89,16 +95,17 @@ def find_emails(html):
     """
     Wyszukuje adresy email w HTML.
     Filtruje rozszerzenia plików graficznych.
+    Szuka też linków mailto:
     """
     if not html:
         return []
     
-    # Regex dla emaili
-    pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-    matches = re.findall(pattern, html)
-    
     emails = []
     file_extensions = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp', '.bmp']
+    
+    # 1. Regex dla emaili w tekście
+    pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    matches = re.findall(pattern, html)
     
     for email in matches:
         # Dekoduj URL-encoded
@@ -113,12 +120,31 @@ def find_emails(html):
             if len(email) > 5 and '.' in email.split('@')[1]:
                 emails.append(email.lower())
     
+    # 2. Szukaj linków mailto: w HTML
+    try:
+        soup = BeautifulSoup(html, 'html.parser')
+        mailto_links = soup.find_all('a', href=re.compile(r'^mailto:', re.I))
+        
+        for link in mailto_links:
+            href = link.get('href', '')
+            if href.lower().startswith('mailto:'):
+                # Wyciągnij email z mailto:
+                email = href[7:]  # Usuń "mailto:"
+                email = email.split('?')[0]  # Usuń parametry (np. ?subject=)
+                email = email.strip()
+                
+                if '@' in email and len(email) > 5:
+                    emails.append(email.lower())
+    except:
+        pass
+    
     return list(set(emails))  # Unikalne
 
 
 def find_contact_links(html, base_url):
     """
-    Znajduje linki do stron kontaktowych.
+    Znajduje linki do stron kontaktowych i mailto:.
+    Zwraca zarówno URLe stron jak i mailto: linki.
     """
     if not html:
         return []
@@ -129,10 +155,19 @@ def find_contact_links(html, base_url):
         contact_links = []
         
         for link in links:
-            href = link.get('href', '')
-            text = link.get_text().lower()
+            href = link.get('href', '').strip()
+            text = link.get_text().lower().strip()
             
-            # Sprawdź czy link/tekst zawiera "kontakt" lub "contact"
+            # 1. Dodaj wszystkie linki mailto: bezpośrednio
+            if href.lower().startswith('mailto:'):
+                contact_links.append(href)
+                continue
+            
+            # 2. Pomiń linki telefoniczne
+            if href.lower().startswith('tel:'):
+                continue
+            
+            # 3. Sprawdź czy link/tekst zawiera "kontakt" lub "contact"
             if ('kontakt' in href.lower() or 'contact' in href.lower() or
                 'kontakt' in text or 'contact' in text):
                 
@@ -140,7 +175,7 @@ def find_contact_links(html, base_url):
                 absolute_url = urljoin(base_url, href)
                 contact_links.append(absolute_url)
         
-        return list(set(contact_links))[:3]  # Max 3 strony kontaktowe
+        return list(set(contact_links))[:5]  # Max 5 linków (mailto: + strony)
     
     except Exception as e:
         logger.debug(f"Błąd parsowania linków: {e}")
@@ -163,6 +198,43 @@ def get_website_content(url):
         return ''
 
 
+def get_email_from_facebook(url):
+    """
+    Pobiera email ze strony Facebook używając mbasic + cookies.
+    """
+    # Konwertuj na mbasic URL
+    url = re.sub(r'\?.*$', '', url)
+    url = url.rstrip('/')
+    url = url.replace('www.facebook.com', 'mbasic.facebook.com')
+    url = url.replace('m.facebook.com', 'mbasic.facebook.com')
+    
+    cookies = {
+        'c_user': '61576034056636',
+        'datr': 'xQAraBTJSKtJ6aNQjqdOGfAe',
+        'locale': 'pl_PL',
+        'xs': '3%3APpJ4r6XF4HDs5w%3A2%3A1747648756%3A-1%3A-1'
+    }
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7',
+    }
+    
+    try:
+        response = requests.get(url, headers=headers, cookies=cookies, timeout=REQUEST_TIMEOUT, verify=False)
+        if response.status_code == 200:
+            # Szukaj emaila w HTML
+            pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+            matches = re.findall(pattern, response.text)
+            if matches:
+                return matches[0].lower()
+        return None
+    except Exception as e:
+        logger.debug(f"Błąd pobierania Facebook {url}: {e}")
+        return None
+
+
 def process_place(place_record, progress):
     """
     Przetwarza jedno miejsce - szuka emaila na stronie.
@@ -177,14 +249,22 @@ def process_place(place_record, progress):
     logger.info(f"[{place_id}] Przetwarzam: {website}")
     
     connection = None
+    email = None
     
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
         
-        # Sprawdź czy to nie social media
-        if 'facebook.com' in website.lower() or 'instagram.com' in website.lower():
-            logger.info(f"[{place_id}] Pomijam social media: {website}")
+        # 1. Sprawdź czy website sam w sobie to mailto:
+        if website.lower().startswith('mailto:'):
+            email = website[7:]  # Usuń "mailto:"
+            email = email.split('?')[0]  # Usuń parametry
+            email = email.strip()
+            logger.info(f"[{place_id}] Email z mailto: {email}")
+        
+        # 2. Sprawdź czy to Instagram - pomiń
+        elif 'instagram.com' in website.lower():
+            logger.info(f"[{place_id}] Pomijam Instagram: {website}")
             cursor.execute("UPDATE places SET email_checked = 1 WHERE id = %s", (place_id,))
             connection.commit()
             
@@ -192,51 +272,70 @@ def process_place(place_record, progress):
                 stats['processed'] += 1
                 stats['not_found'] += 1
             
-            progress[str(place_id)] = {'completed': True, 'result': 'social_media'}
+            progress[str(place_id)] = {'completed': True, 'result': 'instagram'}
             save_progress(progress)
             return
         
-        # Pobierz stronę główną
-        html = get_website_content(website)
+        # 3. Sprawdź czy to Facebook - użyj dedykowanej logiki
+        elif 'facebook.com' in website.lower():
+            logger.info(f"[{place_id}] Facebook - używam dedykowanej logiki")
+            email = get_email_from_facebook(website)
         
-        if not html:
-            logger.warning(f"[{place_id}] Nie udało się pobrać strony: {website}")
-            cursor.execute("UPDATE places SET email_checked = 1 WHERE id = %s", (place_id,))
-            connection.commit()
+        # 4. Standardowa strona
+        else:
+            # Pobierz stronę główną
+            html = get_website_content(website)
             
-            with stats_lock:
-                stats['processed'] += 1
-                stats['errors'] += 1
-            
-            progress[str(place_id)] = {'completed': True, 'result': 'fetch_error'}
-            save_progress(progress)
-            return
-        
-        # Szukaj emaili na stronie głównej
-        emails = find_emails(html)
-        
-        # Jeśli nie ma emaili, szukaj na stronach kontaktowych
-        if not emails:
-            logger.info(f"[{place_id}] Brak emaili na stronie głównej, szukam na stronach kontaktowych")
-            
-            contact_links = find_contact_links(html, website)
-            
-            for contact_link in contact_links:
-                logger.info(f"[{place_id}] Sprawdzam: {contact_link}")
+            if not html:
+                logger.warning(f"[{place_id}] Nie udało się pobrać strony: {website}")
+                cursor.execute("UPDATE places SET email_checked = 1 WHERE id = %s", (place_id,))
+                connection.commit()
                 
-                contact_html = get_website_content(contact_link)
+                with stats_lock:
+                    stats['processed'] += 1
+                    stats['errors'] += 1
                 
-                if contact_html:
-                    contact_emails = find_emails(contact_html)
-                    if contact_emails:
-                        emails = contact_emails
-                        break
+                progress[str(place_id)] = {'completed': True, 'result': 'fetch_error'}
+                save_progress(progress)
+                return
+            
+            # Szukaj emaili na stronie głównej
+            emails = find_emails(html)
+            
+            # Jeśli nie ma emaili, szukaj na stronach kontaktowych
+            if not emails:
+                logger.info(f"[{place_id}] Brak emaili na stronie głównej, szukam na stronach kontaktowych")
                 
-                time.sleep(0.5)  # Przerwa między stronami kontaktowymi
+                contact_links = find_contact_links(html, website)
+                
+                for contact_link in contact_links:
+                    # Obsługa mailto: bezpośrednio
+                    if contact_link.lower().startswith('mailto:'):
+                        email_from_mailto = contact_link[7:]
+                        email_from_mailto = email_from_mailto.split('?')[0].strip()
+                        if '@' in email_from_mailto:
+                            logger.info(f"[{place_id}] Email z mailto: {email_from_mailto}")
+                            emails = [email_from_mailto.lower()]
+                            break
+                    else:
+                        logger.info(f"[{place_id}] Sprawdzam: {contact_link}")
+                        
+                        contact_html = get_website_content(contact_link)
+                        
+                        if contact_html:
+                            contact_emails = find_emails(contact_html)
+                            if contact_emails:
+                                emails = contact_emails
+                                break
+                        
+                        time.sleep(0.5)  # Przerwa między stronami kontaktowymi
+            
+            # Przypisz pierwszy znaleziony email
+            if emails and not email:
+                email = emails[0]
         
         # Zapisz wynik
-        if emails:
-            email = emails[0]  # Pierwszy znaleziony
+        if email:
             logger.info(f"[{place_id}] ✓ Znaleziono email: {email}")
             
             cursor.execute("""
@@ -264,8 +363,8 @@ def process_place(place_record, progress):
         
         progress[str(place_id)] = {
             'completed': True,
-            'result': 'email_found' if emails else 'not_found',
-            'email': emails[0] if emails else None
+            'result': 'email_found' if email else 'not_found',
+            'email': email
         }
         save_progress(progress)
         
