@@ -467,13 +467,6 @@ $configData = Helper::appClasses();
       <div class="consent-text">
         Klikając sprawdź wyrażasz zgodę na kontakt telefoniczny w celu omówienia Twojej wizytówki. Administratorem danych jest get.promo, szczegóły w <a href="#" data-modal="privacy">Polityce Prywatności</a>.
       </div>
-      
-      <!-- Legal Links -->
-      <div class="legal-links">
-        <a href="#" data-modal="terms">Zasady zgłoszenia i kontaktu</a> |
-        <a href="#" data-modal="promo">Zasady promocji</a> |
-        <a href="#" data-modal="privacy">Polityka prywatności</a>
-      </div>
     </div>
     
     <!-- Thank You Page -->
@@ -484,6 +477,13 @@ $configData = Helper::appClasses();
       </div>
     </div>
     </div>
+  </div>
+  
+  <!-- Legal Links - POD białym boxem z form-wrapper -->
+  <div class="legal-links">
+    <a href="#" data-modal="terms">Zasady zgłoszenia i kontaktu</a> |
+    <a href="#" data-modal="promo">Zasady promocji</a> |
+    <a href="#" data-modal="privacy">Polityka prywatności</a>
   </div>
   
   <!-- Modals -->
