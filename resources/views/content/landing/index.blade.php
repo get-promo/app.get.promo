@@ -271,6 +271,10 @@ $configData = Helper::appClasses();
     .then(response => response.json())
     .then(data => {
       if (data.success && data.data.places && data.data.places.length > 0) {
+        // Informacja skąd pochodzą dane (opcjonalnie do debugowania)
+        const source = data.source === 'database' ? '💾 Z naszej bazy' : '🌐 Z Google';
+        console.log('Źródło danych:', source, '- znaleziono', data.data.places.length, 'miejsc');
+        
         displaySuggestions(data.data.places);
       } else {
         suggestionsList.innerHTML = '<div class="loading">Nie znaleziono wyników</div>';
