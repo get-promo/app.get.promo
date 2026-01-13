@@ -58,7 +58,6 @@ $configData = Helper::appClasses();
     font-size: 48px;
     color: #000000;
     line-height: 1.2;
-    display: inline;
   }
   
   .hero-text .line1 .amount {
@@ -70,7 +69,6 @@ $configData = Helper::appClasses();
     font-size: 48px;
     color: #000000;
     line-height: 1.2;
-    display: inline;
   }
   
   .hero-text .subtitle {
@@ -102,7 +100,6 @@ $configData = Helper::appClasses();
     .hero-text .line1,
     .hero-text .line3 {
       font-size: 32px;
-      display: block;
     }
     
     .form-wrapper {
