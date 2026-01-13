@@ -65,7 +65,7 @@ $configData = Helper::appClasses();
   
   .hero-text {
     flex: 1;
-    text-align: right;
+    text-align: left;
   }
   
   .hero-text .line1,
@@ -81,6 +81,13 @@ $configData = Helper::appClasses();
     font-size: 48px;
     color: #4d84f1;
     line-height: 1.2;
+  }
+  
+  .hero-text .subtitle {
+    font-weight: 400;
+    font-size: 18px;
+    color: #5f6368;
+    margin-top: 8px;
   }
   
   .landing-box {
@@ -294,12 +301,13 @@ $configData = Helper::appClasses();
 <div class="landing-container">
   <!-- Hero Section -->
   <div class="hero-section">
-    <div class="hero-image"></div>
     <div class="hero-text">
       <div class="line1">Odbierz</div>
       <div class="line2">1200 zł</div>
-      <div class="line3">na pozycjonowanie</div>
+      <div class="line3">na SEO + Google Ads</div>
+      <div class="subtitle">(pozycjonowanie + reklama)</div>
     </div>
+    <div class="hero-image"></div>
   </div>
   
   <div class="landing-box">
