@@ -73,8 +73,9 @@ class LandingController extends Controller
                 'Content-Type' => 'application/json'
             ])->post('https://google.serper.dev/places', [
                 'q' => $query,
-                'gl' => 'pl',
-                'hl' => 'pl'
+                'gl' => 'pl', // Szukaj tylko w Polsce
+                'hl' => 'pl', // Język polski
+                'location' => 'Poland' // Dodatkowo lokalizacja: Polska
             ]);
 
             if ($response->successful()) {

@@ -4,13 +4,13 @@ $configData = Helper::appClasses();
 
 @extends('layouts/blankLayout')
 
-@section('title', 'Sprawdź swoją wizytówkę Google')
+@section('title', 'Sprawdź czy się kwalifikujesz')
 
 @section('page-style')
 <style>
   body {
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
-    background-color: #f8f9fa;
+    background-color: #ffffff;
   }
   
   .landing-container {
@@ -23,20 +23,24 @@ $configData = Helper::appClasses();
   }
   
   .landing-box {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 40px;
     max-width: 500px;
     width: 100%;
   }
   
   .landing-title {
-    font-size: 24px;
+    font-size: 32px;
+    font-weight: 500;
+    color: #202124;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  
+  .input-label {
+    font-size: 16px;
     font-weight: 400;
     color: #202124;
-    margin-bottom: 30px;
-    text-align: center;
+    margin-bottom: 8px;
+    display: block;
   }
   
   .search-wrapper {
@@ -60,7 +64,7 @@ $configData = Helper::appClasses();
   
   .suggestions-list {
     position: absolute;
-    top: 100%;
+    top: calc(100% - 32px);
     left: 0;
     right: 0;
     background: white;
@@ -71,6 +75,7 @@ $configData = Helper::appClasses();
     overflow-y: auto;
     z-index: 1000;
     display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
   .suggestions-list.show {
@@ -171,16 +176,19 @@ $configData = Helper::appClasses();
 @section('content')
 <div class="landing-container">
   <div class="landing-box">
-    <h1 class="landing-title">Sprawdź swoją wizytówkę Google</h1>
+    <h1 class="landing-title">Sprawdź czy się kwalifikujesz</h1>
     
     <!-- Formularz z wyszukiwarką miejsc -->
     <div id="placeSearchForm">
       <div class="search-wrapper">
+        <label for="placeSearch" class="input-label">
+          Jak nazywa się Twoja firma w Google?
+        </label>
         <input 
           type="text" 
           id="placeSearch" 
           class="search-input" 
-          placeholder="Wpisz nazwę swojej firmy..."
+          placeholder="Nazwa Profilu Firmy w Google, tzw. wizytówki"
           autocomplete="off"
         >
         <div id="suggestionsList" class="suggestions-list"></div>
