@@ -14,9 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
   ->withMiddleware(function (Middleware $middleware) {
     $middleware->web(LocaleMiddleware::class);
     
-    // Wyłącz CSRF dla endpointów httpSMS API
+    // Wyłącz CSRF dla publicznych API endpointów
     $middleware->validateCsrfTokens(except: [
       'httpSMS/*',
+      'api/public/*', // Landing page publiczne endpointy
     ]);
   })
   ->withExceptions(function (Exceptions $exceptions) {
