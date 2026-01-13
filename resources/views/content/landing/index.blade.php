@@ -290,6 +290,23 @@ $configData = Helper::appClasses();
     color: #5f6368;
     line-height: 1.6;
   }
+  
+  .consent-text {
+    font-size: 12px;
+    color: #5f6368;
+    line-height: 1.5;
+    margin-top: 16px;
+    text-align: center;
+  }
+  
+  .consent-text a {
+    color: #1a73e8;
+    text-decoration: none;
+  }
+  
+  .consent-text a:hover {
+    text-decoration: underline;
+  }
 </style>
 @endsection
 
@@ -352,6 +369,10 @@ $configData = Helper::appClasses();
       </div>
       
       <button id="submitPhoneBtn" class="btn-google">Sprawdź</button>
+      
+      <div class="consent-text">
+        Klikając sprawdź wyrażasz zgodę na kontakt telefoniczny w celu omówienia Twojej wizytówki. Administratorem danych jest get.promo, szczegóły w <a href="/polityka-prywatnosci" target="_blank">Polityce Prywatności</a>.
+      </div>
     </div>
     
     <!-- Thank You Page -->
