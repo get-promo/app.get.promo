@@ -307,6 +307,100 @@ $configData = Helper::appClasses();
   .consent-text a:hover {
     text-decoration: underline;
   }
+  
+  .legal-links {
+    margin-top: 60px;
+    text-align: center;
+    font-size: 13px;
+    color: #5f6368;
+  }
+  
+  .legal-links a {
+    color: #1a73e8;
+    text-decoration: none;
+    margin: 0 10px;
+  }
+  
+  .legal-links a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+  }
+  
+  .modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    padding: 40px;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #5f6368;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+  }
+  
+  .modal-close:hover {
+    color: #000;
+  }
+  
+  .modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #202124;
+    font-size: 24px;
+  }
+  
+  .modal-content h3 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #202124;
+    font-size: 18px;
+  }
+  
+  .modal-content p,
+  .modal-content ul {
+    color: #5f6368;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  
+  .modal-content ul {
+    padding-left: 20px;
+  }
+  
+  .modal-content strong {
+    color: #202124;
+  }
 </style>
 @endsection
 
@@ -317,7 +411,7 @@ $configData = Helper::appClasses();
     <div class="hero-text">
       <div class="line1">Odbierz <span class="amount">1200 zł</span></div>
       <div class="line3">na SEO + Google Ads</div>
-      <div class="subtitle">(pozycjonowanie + reklama)</div>
+      <div class="subtitle">(pozycjonowanie i obsługa kampanii)</div>
     </div>
   </div>
   
@@ -371,7 +465,14 @@ $configData = Helper::appClasses();
       <button id="submitPhoneBtn" class="btn-google">Sprawdź</button>
       
       <div class="consent-text">
-        Klikając sprawdź wyrażasz zgodę na kontakt telefoniczny w celu omówienia Twojej wizytówki. Administratorem danych jest get.promo, szczegóły w <a href="/polityka-prywatnosci" target="_blank">Polityce Prywatności</a>.
+        Klikając sprawdź wyrażasz zgodę na kontakt telefoniczny w celu omówienia Twojej wizytówki. Administratorem danych jest get.promo, szczegóły w <a href="#" data-modal="privacy">Polityce Prywatności</a>.
+      </div>
+      
+      <!-- Legal Links -->
+      <div class="legal-links">
+        <a href="#" data-modal="terms">Zasady zgłoszenia i kontaktu</a> |
+        <a href="#" data-modal="promo">Zasady promocji</a> |
+        <a href="#" data-modal="privacy">Polityka prywatności</a>
       </div>
     </div>
     
@@ -384,6 +485,11 @@ $configData = Helper::appClasses();
     </div>
     </div>
   </div>
+  
+  <!-- Modals -->
+  @include('content.landing.modals.terms')
+  @include('content.landing.modals.promo')
+  @include('content.landing.modals.privacy')
 </div>
 @endsection
 
@@ -569,6 +675,45 @@ $configData = Helper::appClasses();
     if (!e.target.closest('.search-wrapper')) {
       suggestionsList.classList.remove('show');
     }
+  });
+  
+  // Modal handling
+  const modalLinks = document.querySelectorAll('[data-modal]');
+  const modals = document.querySelectorAll('.modal');
+  const modalCloses = document.querySelectorAll('.modal-close');
+  
+  // Open modal
+  modalLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const modalId = link.getAttribute('data-modal');
+      const modal = document.getElementById('modal-' + modalId);
+      if (modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  });
+  
+  // Close modal on X click
+  modalCloses.forEach(close => {
+    close.addEventListener('click', () => {
+      const modal = close.closest('.modal');
+      if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+  
+  // Close modal on background click
+  modals.forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
   });
   
   // Formatowanie numeru telefonu (automatyczne spacje)
