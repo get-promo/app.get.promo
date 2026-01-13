@@ -46,25 +46,11 @@ $configData = Helper::appClasses();
   }
   
   .hero-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     width: 100%;
     margin-bottom: 40px;
-    gap: 40px;
-  }
-  
-  .hero-image {
-    flex: 0 0 40%;
-    background-image: url('/assets/images/landing/1200-lady.webp');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    min-height: 300px;
   }
   
   .hero-text {
-    flex: 1;
     text-align: left;
   }
   
@@ -96,16 +82,6 @@ $configData = Helper::appClasses();
   }
   
   @media (max-width: 768px) {
-    .hero-section {
-      flex-direction: column;
-      text-align: center;
-    }
-    
-    .hero-image {
-      min-height: 200px;
-      width: 100%;
-    }
-    
     .hero-text {
       text-align: center;
     }
@@ -154,7 +130,7 @@ $configData = Helper::appClasses();
   
   .suggestions-list {
     position: absolute;
-    top: calc(100% - 32px);
+    top: 100%;
     left: 0;
     right: 0;
     background: white;
@@ -166,6 +142,7 @@ $configData = Helper::appClasses();
     z-index: 1000;
     display: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: -1px;
   }
   
   .suggestions-list.show {
@@ -307,7 +284,6 @@ $configData = Helper::appClasses();
       <div class="line3">na SEO + Google Ads</div>
       <div class="subtitle">(pozycjonowanie + reklama)</div>
     </div>
-    <div class="hero-image"></div>
   </div>
   
   <div class="landing-box">
