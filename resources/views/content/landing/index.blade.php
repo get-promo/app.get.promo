@@ -48,10 +48,11 @@ $configData = Helper::appClasses();
   .hero-section {
     width: 100%;
     margin-bottom: 40px;
+    text-align: center;
   }
   
   .hero-text {
-    text-align: left;
+    text-align: center;
   }
   
   .hero-text .line1,
@@ -76,20 +77,35 @@ $configData = Helper::appClasses();
     margin-top: 8px;
   }
   
-  .landing-box {
-    max-width: 500px;
+  .form-wrapper {
+    background-color: #e8f0fe;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 560px;
     width: 100%;
+    margin: 0 auto;
+  }
+  
+  .landing-box {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
   
   @media (max-width: 768px) {
-    .hero-text {
-      text-align: center;
-    }
-    
     .hero-text .line1,
     .hero-text .line2,
     .hero-text .line3 {
       font-size: 32px;
+    }
+    
+    .form-wrapper {
+      padding: 20px;
+    }
+    
+    .landing-box {
+      padding: 30px 20px;
     }
   }
   
@@ -279,14 +295,15 @@ $configData = Helper::appClasses();
   <!-- Hero Section -->
   <div class="hero-section">
     <div class="hero-text">
-      <div class="line1">Odbierz</div>
-      <div class="line2">1200 zł</div>
+      <div class="line1">Odbierz 1200 zł</div>
       <div class="line3">na SEO + Google Ads</div>
       <div class="subtitle">(pozycjonowanie + reklama)</div>
     </div>
   </div>
   
-  <div class="landing-box">
+  <!-- Form Wrapper with background -->
+  <div class="form-wrapper">
+    <div class="landing-box">
     <h1 class="landing-title">Sprawdź czy się kwalifikujesz</h1>
     
     <!-- Formularz z wyszukiwarką miejsc -->
@@ -340,6 +357,7 @@ $configData = Helper::appClasses();
         <h2>Dziękujemy!</h2>
         <p>Nasz certyfikowany ekspert Google Ads skontaktuje się z Tobą w ciągu 10 minut</p>
       </div>
+    </div>
     </div>
   </div>
 </div>
