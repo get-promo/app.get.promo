@@ -39,15 +39,14 @@ $configData = Helper::appClasses();
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding-top: 60px;
   }
   
   .hero-section {
     width: 100%;
-    margin-bottom: 40px;
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    padding: 20px;
     text-align: center;
   }
   
@@ -55,18 +54,21 @@ $configData = Helper::appClasses();
     text-align: center;
   }
   
-  .hero-text .line1,
-  .hero-text .line3 {
+  .hero-text .line1 {
     font-weight: 700;
     font-size: 48px;
     color: #000000;
     line-height: 1.2;
   }
   
-  .hero-text .line2 {
+  .hero-text .line1 .amount {
+    color: #4d84f1;
+  }
+  
+  .hero-text .line3 {
     font-weight: 700;
     font-size: 48px;
-    color: #4d84f1;
+    color: #000000;
     line-height: 1.2;
   }
   
@@ -79,11 +81,10 @@ $configData = Helper::appClasses();
   
   .form-wrapper {
     background-color: #e8f0fe;
-    padding: 30px;
-    border-radius: 20px;
-    max-width: 560px;
     width: 100%;
-    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
   }
   
   .landing-box {
@@ -91,6 +92,8 @@ $configData = Helper::appClasses();
     border-radius: 20px;
     padding: 40px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    max-width: 500px;
+    width: 100%;
   }
   
   @media (max-width: 768px) {
@@ -295,7 +298,7 @@ $configData = Helper::appClasses();
   <!-- Hero Section -->
   <div class="hero-section">
     <div class="hero-text">
-      <div class="line1">Odbierz 1200 zł</div>
+      <div class="line1">Odbierz <span class="amount">1200 zł</span></div>
       <div class="line3">na SEO + Google Ads</div>
       <div class="subtitle">(pozycjonowanie + reklama)</div>
     </div>
