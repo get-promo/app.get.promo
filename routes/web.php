@@ -10,6 +10,7 @@ use App\Http\Controllers\authentications\RegisterBasic;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\HttpSmsController;
+use App\Http\Controllers\LandingController;
 
 // Authentication routes (bez middleware auth)
 Route::get('/login', [LoginBasic::class, 'index'])->name('login');
@@ -30,6 +31,11 @@ Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-e
 
 // Publiczny raport (bez auth, z noindex)
 Route::get('/reports/{key}', [ReportController::class, 'show'])->name('reports.show');
+
+// Landing page - wyszukiwarka miejsc (publiczny, bez logowania)
+Route::get('/sprawdz-wizytowke', [LandingController::class, 'index'])->name('landing.index');
+Route::post('/api/public/search-places', [LandingController::class, 'searchPlaces'])->name('landing.search-places');
+Route::post('/api/public/submit-phone', [LandingController::class, 'submitPhone'])->name('landing.submit-phone');
 
 // Chronione routes (wymagają logowania)
 Route::middleware(['auth'])->group(function () {
