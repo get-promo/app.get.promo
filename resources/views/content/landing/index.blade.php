@@ -39,13 +39,12 @@ $configData = Helper::appClasses();
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 60px;
   }
   
   .hero-section {
     width: 100%;
     max-width: 1200px;
-    margin: 0 auto 40px;
+    margin: 0 auto;
     padding: 20px;
     text-align: center;
   }
@@ -82,7 +81,8 @@ $configData = Helper::appClasses();
   .form-wrapper {
     background-color: #e8f0fe;
     width: 100%;
-    padding: 40px 20px;
+    padding: 60px 20px;
+    border-radius: 20px;
     display: flex;
     justify-content: center;
   }
@@ -104,7 +104,7 @@ $configData = Helper::appClasses();
     }
     
     .form-wrapper {
-      padding: 20px;
+      padding: 60px 20px;
     }
     
     .landing-box {
