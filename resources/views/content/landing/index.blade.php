@@ -8,8 +8,29 @@ $configData = Helper::appClasses();
 
 @section('page-style')
 <style>
+  @font-face {
+    font-family: 'Product Sans';
+    src: url('/assets/fonts/ProductSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'Product Sans';
+    src: url('/assets/fonts/ProductSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'Product Sans';
+    src: url('/assets/fonts/ProductSans-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+  }
+  
   body {
-    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    font-family: 'Product Sans', 'Google Sans', Roboto, Arial, sans-serif;
     background-color: #ffffff;
   }
   
@@ -20,11 +41,73 @@ $configData = Helper::appClasses();
     align-items: center;
     justify-content: center;
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 40px;
+    gap: 40px;
+  }
+  
+  .hero-image {
+    flex: 0 0 40%;
+    background-image: url('/assets/images/landing/1200-lady.webp');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 300px;
+  }
+  
+  .hero-text {
+    flex: 1;
+    text-align: right;
+  }
+  
+  .hero-text .line1,
+  .hero-text .line3 {
+    font-weight: 700;
+    font-size: 48px;
+    color: #000000;
+    line-height: 1.2;
+  }
+  
+  .hero-text .line2 {
+    font-weight: 700;
+    font-size: 48px;
+    color: #4d84f1;
+    line-height: 1.2;
   }
   
   .landing-box {
     max-width: 500px;
     width: 100%;
+  }
+  
+  @media (max-width: 768px) {
+    .hero-section {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .hero-image {
+      min-height: 200px;
+      width: 100%;
+    }
+    
+    .hero-text {
+      text-align: center;
+    }
+    
+    .hero-text .line1,
+    .hero-text .line2,
+    .hero-text .line3 {
+      font-size: 32px;
+    }
   }
   
   .landing-title {
@@ -209,6 +292,16 @@ $configData = Helper::appClasses();
 
 @section('content')
 <div class="landing-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-image"></div>
+    <div class="hero-text">
+      <div class="line1">Odbierz</div>
+      <div class="line2">1200 zł</div>
+      <div class="line3">na pozycjonowanie</div>
+    </div>
+  </div>
+  
   <div class="landing-box">
     <h1 class="landing-title">Sprawdź czy się kwalifikujesz</h1>
     
