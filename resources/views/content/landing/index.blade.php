@@ -145,15 +145,31 @@ $configData = Helper::appClasses();
     text-decoration: underline;
   }
   
+  .phone-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .phone-prefix {
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    color: #202124;
+    font-weight: 500;
+  }
+  
   .phone-input {
-    width: 100%;
+    flex: 1;
     padding: 12px 16px;
     font-size: 16px;
     border: 1px solid #dadce0;
     border-radius: 4px;
     outline: none;
     transition: border-color 0.2s;
-    margin-bottom: 20px;
   }
   
   .phone-input:focus {
@@ -169,6 +185,24 @@ $configData = Helper::appClasses();
     color: #5f6368;
     font-size: 14px;
     padding: 12px;
+  }
+  
+  .thank-you-message {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  .thank-you-message h2 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #1a73e8;
+    margin-bottom: 20px;
+  }
+  
+  .thank-you-message p {
+    font-size: 16px;
+    color: #5f6368;
+    line-height: 1.6;
   }
 </style>
 @endsection
@@ -205,19 +239,29 @@ $configData = Helper::appClasses();
     
     <!-- Formularz z numerem telefonu -->
     <div id="phoneForm" class="hidden">
-      <input 
-        type="tel" 
-        id="phoneInput" 
-        class="phone-input" 
-        placeholder="Wprowadź numer telefonu"
-      >
+      <label for="phoneInput" class="input-label">
+        Podaj numer telefonu
+      </label>
       
-      <button id="submitPhoneBtn" class="btn-google">Dalej</button>
+      <div class="phone-wrapper">
+        <div class="phone-prefix">+48</div>
+        <input 
+          type="tel" 
+          id="phoneInput" 
+          class="phone-input" 
+          placeholder="789 123 456"
+          maxlength="11"
+        >
+      </div>
       
-      <div class="alternative-link">
-        <a href="#" id="backLink">
-          Powrót do wyszukiwarki
-        </a>
+      <button id="submitPhoneBtn" class="btn-google">Sprawdź</button>
+    </div>
+    
+    <!-- Thank You Page -->
+    <div id="thankYouPage" class="hidden">
+      <div class="thank-you-message">
+        <h2>Dziękujemy!</h2>
+        <p>Nasz certyfikowany ekspert Google Ads skontaktuje się z Tobą w ciągu 10 minut</p>
       </div>
     </div>
   </div>
@@ -233,11 +277,11 @@ $configData = Helper::appClasses();
   const suggestionsList = document.getElementById('suggestionsList');
   const checkBtn = document.getElementById('checkBtn');
   const alternativeLink = document.getElementById('alternativeLink');
-  const backLink = document.getElementById('backLink');
   const placeSearchForm = document.getElementById('placeSearchForm');
   const phoneForm = document.getElementById('phoneForm');
   const phoneInput = document.getElementById('phoneInput');
   const submitPhoneBtn = document.getElementById('submitPhoneBtn');
+  const thankYouPage = document.getElementById('thankYouPage');
   
   // Obsługa wyszukiwania miejsc
   placeSearch.addEventListener('input', function(e) {
@@ -323,53 +367,76 @@ $configData = Helper::appClasses();
     suggestionsList.classList.remove('show');
     suggestionsList.innerHTML = '';
     checkBtn.disabled = false;
+    
+    // Loguj wybór miejsca (selected)
+    fetch('/api/public/log-selected', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({ place: place })
+    }).catch(error => console.error('Error logging selected:', error));
   }
   
   // Kliknięcie przycisku "Sprawdź"
   checkBtn.addEventListener('click', () => {
     if (selectedPlace) {
-      // Tutaj możesz dodać logikę przekierowania lub wyświetlenia szczegółów
-      console.log('Wybrane miejsce:', selectedPlace);
-      alert('Wybrano: ' + selectedPlace.title);
+      // Loguj kliknięcie "Sprawdź" (checked)
+      fetch('/api/public/log-checked', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ place: selectedPlace })
+      }).catch(error => console.error('Error logging checked:', error));
+      
+      // Pokaż formularz telefonu
+      placeSearchForm.classList.add('hidden');
+      phoneForm.classList.remove('hidden');
     }
   });
   
-  // Przełączanie na formularz z telefonem
+  // Przełączanie na formularz z telefonem (alternatywny link)
   alternativeLink.addEventListener('click', (e) => {
     e.preventDefault();
+    selectedPlace = null; // Czyścimy wybrane miejsce
     placeSearchForm.classList.add('hidden');
     phoneForm.classList.remove('hidden');
   });
   
-  // Powrót do wyszukiwarki
-  backLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    phoneForm.classList.add('hidden');
-    placeSearchForm.classList.remove('hidden');
-  });
-  
   // Obsługa wysyłania numeru telefonu
   submitPhoneBtn.addEventListener('click', () => {
-    const phone = phoneInput.value.trim();
+    const phone = phoneInput.value.trim().replace(/\s/g, '');
     
-    if (phone.length < 9) {
-      alert('Wprowadź poprawny numer telefonu');
+    if (phone.length !== 9 || !/^\d+$/.test(phone)) {
+      alert('Wprowadź poprawny 9-cyfrowy numer telefonu');
       return;
     }
     
+    const fullPhone = '+48' + phone;
+    
+    // Wyślij numer telefonu
     fetch('/api/public/submit-phone', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': '{{ csrf_token() }}'
       },
-      body: JSON.stringify({ phone: phone })
+      body: JSON.stringify({ 
+        phone: fullPhone,
+        place: selectedPlace // Dołącz dane miejsca jeśli wybrano
+      })
     })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        alert('Dziękujemy! Skontaktujemy się z Tobą wkrótce.');
-        phoneInput.value = '';
+        // Pokaż thank you page
+        phoneForm.classList.add('hidden');
+        thankYouPage.classList.remove('hidden');
+      } else {
+        alert('Wystąpił błąd podczas wysyłania');
       }
     })
     .catch(error => {
@@ -383,6 +450,24 @@ $configData = Helper::appClasses();
     if (!e.target.closest('.search-wrapper')) {
       suggestionsList.classList.remove('show');
     }
+  });
+  
+  // Formatowanie numeru telefonu (automatyczne spacje)
+  phoneInput.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Usuń wszystko oprócz cyfr
+    
+    if (value.length > 9) {
+      value = value.slice(0, 9);
+    }
+    
+    // Formatuj: XXX XXX XXX
+    if (value.length > 6) {
+      value = value.slice(0, 3) + ' ' + value.slice(3, 6) + ' ' + value.slice(6);
+    } else if (value.length > 3) {
+      value = value.slice(0, 3) + ' ' + value.slice(3);
+    }
+    
+    e.target.value = value;
   });
 </script>
 @endsection

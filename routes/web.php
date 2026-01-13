@@ -35,6 +35,8 @@ Route::get('/reports/{key}', [ReportController::class, 'show'])->name('reports.s
 // Landing page - wyszukiwarka miejsc (publiczny, bez logowania)
 Route::get('/sprawdz-wizytowke', [LandingController::class, 'index'])->name('landing.index');
 Route::post('/api/public/search-places', [LandingController::class, 'searchPlaces'])->name('landing.search-places');
+Route::post('/api/public/log-selected', [LandingController::class, 'logSelected'])->name('landing.log-selected');
+Route::post('/api/public/log-checked', [LandingController::class, 'logChecked'])->name('landing.log-checked');
 Route::post('/api/public/submit-phone', [LandingController::class, 'submitPhone'])->name('landing.submit-phone');
 
 // Chronione routes (wymagają logowania)
