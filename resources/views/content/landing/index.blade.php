@@ -133,7 +133,7 @@ $configData = Helper::appClasses();
     margin-bottom: 20px;
   }
   
-  .search-input {
+  .place-search-input {
     width: 100%;
     padding: 12px 16px;
     font-size: 16px;
@@ -143,7 +143,7 @@ $configData = Helper::appClasses();
     transition: border-color 0.2s;
   }
   
-  .search-input:focus {
+  .place-search-input:focus {
     border-color: #1a73e8;
   }
   
@@ -429,7 +429,7 @@ $configData = Helper::appClasses();
         <input 
           type="text" 
           id="placeSearch" 
-          class="search-input" 
+          class="place-search-input" 
           placeholder="Nazwa Profilu Firmy w Google, tzw. wizytówki"
           autocomplete="off"
         >
