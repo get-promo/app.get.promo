@@ -15,8 +15,7 @@ class LandingController extends Controller
      */
     public function index()
     {
-        // Tymczasowo: pokaż stronę debug pod głównym URL
-        return view('content.landing.debug');
+        return view('content.landing.index');
     }
 
     /**
