@@ -633,9 +633,15 @@ $configData = Helper::appClasses();
   
   // Obsługa wysyłania numeru telefonu
   submitPhoneBtn.addEventListener('click', () => {
-    const phone = phoneInput.value.trim().replace(/\s/g, '');
+    let phone = phoneInput.value.trim();
+    // Usuń wszystko poza cyframi
+    phone = phone.replace(/\D/g, '');
+    // Jeśli wklejono z +48, usuń prefiks kraju
+    if (phone.startsWith('48') && phone.length > 9) {
+      phone = phone.slice(2);
+    }
     
-    if (phone.length !== 9 || !/^\d+$/.test(phone)) {
+    if (phone.length !== 9) {
       alert('Wprowadź poprawny 9-cyfrowy numer telefonu');
       return;
     }
@@ -718,7 +724,13 @@ $configData = Helper::appClasses();
   
   // Formatowanie numeru telefonu (automatyczne spacje)
   phoneInput.addEventListener('input', (e) => {
-    let value = e.target.value.replace(/\D/g, ''); // Usuń wszystko oprócz cyfr
+    let value = e.target.value;
+    // Usuń wszystko oprócz cyfr
+    value = value.replace(/\D/g, '');
+    // Obsłuż wklejony prefiks kraju (+48)
+    if (value.startsWith('48') && value.length > 9) {
+      value = value.slice(2);
+    }
     
     if (value.length > 9) {
       value = value.slice(0, 9);
