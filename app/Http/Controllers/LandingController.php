@@ -11,6 +11,19 @@ use Illuminate\Support\Facades\Log;
 class LandingController extends Controller
 {
     /**
+     * Zabezpiecza długość user-agent dla bazy (MySQL string 255)
+     */
+    private function safeUserAgent(Request $request): ?string
+    {
+        $userAgent = $request->userAgent();
+        if ($userAgent === null) {
+            return null;
+        }
+
+        return mb_substr($userAgent, 0, 255);
+    }
+
+    /**
      * Pokazuje landing page z wyszukiwarką
      */
     public function index()
@@ -50,7 +63,7 @@ class LandingController extends Controller
     public function searchPlaces(Request $request)
     {
         // DEBUG: Loguj WSZYSTKO
-        $userAgent = $request->userAgent();
+        $userAgent = $this->safeUserAgent($request);
         $isFacebookBrowser = preg_match('/FBAN|FBAV|FB_IAB|FB4A/i', $userAgent);
         $isInstagramBrowser = preg_match('/Instagram/i', $userAgent);
         
@@ -156,7 +169,7 @@ class LandingController extends Controller
                 'search_query' => $query,
                 'source' => $source,
                 'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
+                'user_agent' => $userAgent,
                 'session_id' => $request->session()->getId(),
             ]);
 
@@ -209,7 +222,7 @@ class LandingController extends Controller
             'place_cid' => $place['cid'] ?? null,
             'place_data' => $place,
             'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
+            'user_agent' => $this->safeUserAgent($request),
             'session_id' => $request->session()->getId(),
         ]);
 
@@ -236,7 +249,7 @@ class LandingController extends Controller
             'place_cid' => $place['cid'] ?? null,
             'place_data' => $place,
             'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
+            'user_agent' => $this->safeUserAgent($request),
             'session_id' => $request->session()->getId(),
         ]);
 
@@ -266,7 +279,7 @@ class LandingController extends Controller
             'place_cid' => $place['cid'] ?? null,
             'place_data' => $place,
             'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
+            'user_agent' => $this->safeUserAgent($request),
             'session_id' => $request->session()->getId(),
         ]);
 
