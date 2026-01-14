@@ -19,6 +19,32 @@ class LandingController extends Controller
     }
 
     /**
+     * Strona debug dla in-app browser (bez logowania)
+     */
+    public function debugPage()
+    {
+        return view('content.landing.debug');
+    }
+
+    /**
+     * Endpoint debugujący request (bez logowania)
+     */
+    public function debugRequest(Request $request)
+    {
+        return response()->json([
+            'message' => '✅ Request received successfully!',
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'headers' => $request->headers->all(),
+            'input' => $request->all(),
+            'session_id' => $request->session()->getId(),
+            'timestamp' => now()->toISOString(),
+        ]);
+    }
+
+    /**
      * Wyszukiwanie miejsc - najpierw w bazie, potem przez Serper API
      */
     public function searchPlaces(Request $request)
