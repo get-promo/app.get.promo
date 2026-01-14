@@ -23,14 +23,45 @@ class LandingController extends Controller
      */
     public function searchPlaces(Request $request)
     {
-        $request->validate([
-            'query' => 'required|string|min:4'
+        // DEBUG: Loguj WSZYSTKO
+        $userAgent = $request->userAgent();
+        $isFacebookBrowser = preg_match('/FBAN|FBAV|FB_IAB|FB4A/i', $userAgent);
+        $isInstagramBrowser = preg_match('/Instagram/i', $userAgent);
+        
+        Log::info('=== LANDING SEARCH REQUEST START ===', [
+            'query' => $request->input('query'),
+            'ip' => $request->ip(),
+            'user_agent' => $userAgent,
+            'is_facebook_browser' => $isFacebookBrowser,
+            'is_instagram_browser' => $isInstagramBrowser,
+            'all_headers' => $request->headers->all(),
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'has_session' => $request->hasSession(),
+            'session_id' => $request->hasSession() ? $request->session()->getId() : 'NO SESSION',
         ]);
+
+        try {
+            $request->validate([
+                'query' => 'required|string|min:4'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Validation failed', [
+                'error' => $e->getMessage(),
+                'input' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Błąd walidacji: ' . $e->getMessage()
+            ], 422);
+        }
 
         $query = $request->input('query');
         
         try {
             // 1. NAJPIERW szukaj w lokalnej bazie danych
+            Log::info('Searching in local database', ['query' => $query]);
+            
             $localPlaces = Place::search($query)
                 ->limit(10)
                 ->get();
@@ -103,22 +134,33 @@ class LandingController extends Controller
                 'session_id' => $request->session()->getId(),
             ]);
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'source' => $source,
                 'data' => [
                     'places' => $places
                 ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error searching places', [
+            ];
+
+            Log::info('=== LANDING SEARCH SUCCESS ===', [
                 'query' => $query,
-                'error' => $e->getMessage()
+                'source' => $source,
+                'places_count' => count($places),
+                'response' => $response
+            ]);
+
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('=== LANDING SEARCH ERROR ===', [
+                'query' => $query ?? 'N/A',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Wystąpił błąd: ' . $e->getMessage()
+                'message' => 'Wystąpił błąd: ' . $e->getMessage(),
+                'debug' => config('app.debug') ? $e->getTraceAsString() : null
             ], 500);
         }
     }

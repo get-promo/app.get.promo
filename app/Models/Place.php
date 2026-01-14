@@ -55,3 +55,4 @@ class Place extends Model
     }
 }
 
+

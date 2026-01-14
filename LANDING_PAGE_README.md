@@ -187,3 +187,4 @@ Landing page używa:
 - Nie wymaga logowania (poza middleware auth)
 - Wszystkie API endpointy są pod `/api/public/`
 
+

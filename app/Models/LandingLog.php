@@ -44,3 +44,4 @@ class LandingLog extends Model
     }
 }
 
+

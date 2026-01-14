@@ -34,10 +34,28 @@ Route::get('/reports/{key}', [ReportController::class, 'show'])->name('reports.s
 
 // Landing page - wyszukiwarka miejsc (publiczny, bez logowania)
 Route::get('/sprawdz-wizytowke', [LandingController::class, 'index'])->name('landing.index');
+Route::get('/sprawdz-wizytowke/debug', function() {
+    return view('content.landing.debug');
+})->name('landing.debug');
 Route::post('/api/public/search-places', [LandingController::class, 'searchPlaces'])->name('landing.search-places');
 Route::post('/api/public/log-selected', [LandingController::class, 'logSelected'])->name('landing.log-selected');
 Route::post('/api/public/log-checked', [LandingController::class, 'logChecked'])->name('landing.log-checked');
 Route::post('/api/public/submit-phone', [LandingController::class, 'submitPhone'])->name('landing.submit-phone');
+
+// DEBUG endpoint - pokazuje co przychodzi z przeglądarki
+Route::any('/api/public/debug-request', function(\Illuminate\Http\Request $request) {
+    return response()->json([
+        'message' => '✅ Request received successfully!',
+        'method' => $request->method(),
+        'url' => $request->fullUrl(),
+        'ip' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'headers' => $request->headers->all(),
+        'input' => $request->all(),
+        'session_id' => $request->session()->getId(),
+        'timestamp' => now()->toISOString(),
+    ]);
+})->name('landing.debug-request');
 
 // Chronione routes (wymagają logowania)
 Route::middleware(['auth'])->group(function () {
